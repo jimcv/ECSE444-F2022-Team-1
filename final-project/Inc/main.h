@@ -36,6 +36,9 @@ extern "C" {
 #include "stm32l4s5i_iot01_magneto.h"
 #include "stm32l4s5i_iot01_qspi.h"
 
+#define ARM_MATH_CM4
+#include "arm_math.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
