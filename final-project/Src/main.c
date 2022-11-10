@@ -518,6 +518,60 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+// wrapper function to handle QSPI flash errors
+void flash_exec(uint8_t QSPI_Memory_Status)
+{
+	if (QSPI_Memory_Status != QSPI_OK) Error_Handler();
+}
+
+// generate sine wave data in the buffer
+void gen_sine(uint32_t *buf, uint32_t buf_size, float sine_step, uint32_t dac_max)
+{
+	uint32_t dac_offset = dac_max / 2;
+	float sine_x = 0.0;
+	for (int i = 0; i < buf_size; i++)
+	{
+		buf[i] = (uint32_t)(arm_sin_f32(sine_x) * dac_offset + dac_offset);
+		sine_x += sine_step;
+	}
+}
+
+void led_green_on()
+{
+	HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
+}
+
+void led_green_off()
+{
+	HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
+}
+
+void led_red_on()
+{
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
+}
+
+void led_red_off()
+{
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (GPIO_Pin == USER_BUTTON_Pin)
+	{
+		// do something when USER_BUTTON is pressed
+	}
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if (htim->Instance == TIM3)
+	{
+		// TIM3 interrupt
+	}
+}
+
 /* USER CODE END 4 */
 
 /**
@@ -529,6 +583,8 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
+  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
+  __BKPT();
   while (1)
   {
   }
