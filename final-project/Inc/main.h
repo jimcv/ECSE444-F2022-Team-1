@@ -31,6 +31,13 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stm32l4s5i_iot01_accelero.h"
+#include "stm32l4s5i_iot01_gyro.h"
+#include "stm32l4s5i_iot01_magneto.h"
+#include "stm32l4s5i_iot01_qspi.h"
+
+#define ARM_MATH_CM4
+#include "arm_math.h"
 
 /* USER CODE END Includes */
 
@@ -46,6 +53,7 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+#define ARRAY_LEN(a) sizeof(a) / sizeof(a[0])
 
 /* USER CODE END EM */
 
@@ -53,10 +61,18 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+void flash_exec(uint8_t QSPI_Memory_Status);
+void gen_sine(uint32_t *buf, uint32_t buf_size, float step, uint32_t dac_max);
+void led_green_on();
+void led_green_off();
+void led_red_on();
+void led_red_off();
 
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define LED_RED_Pin GPIO_PIN_3
+#define LED_RED_GPIO_Port GPIOE
 #define USER_BUTTON_Pin GPIO_PIN_13
 #define USER_BUTTON_GPIO_Port GPIOC
 #define USER_BUTTON_EXTI_IRQn EXTI15_10_IRQn
