@@ -31,6 +31,9 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "stm32l4s5i_iot01_accelero.h"
+#include "stm32l4s5i_iot01_gyro.h"
+#include "stm32l4s5i_iot01_magneto.h"
 
 /* USER CODE END Includes */
 
