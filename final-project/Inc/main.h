@@ -48,7 +48,7 @@ typedef int MODE;
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-extern MODE mode;
+extern const MODE mode;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -56,9 +56,9 @@ extern MODE mode;
 #define ARRAY_LEN(a) sizeof(a) / sizeof(a[0])
 
 #define IS_MODE_RTOS()    mode & MODE_RTOS
-#define IS_MODE_INPUT()   mode & MODE_INPUT
-#define IS_MODE_ENGINE()  mode & MODE_ENGINE
-#define IS_MODE_OUTPUT()  mode & MODE_OUTPUT
+#define IS_MODE_INPUT()   mode & MODE_TEST_INPUT
+#define IS_MODE_ENGINE()  mode & MODE_TEST_ENGINE
+#define IS_MODE_OUTPUT()  mode & MODE_TEST_OUTPUT
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
