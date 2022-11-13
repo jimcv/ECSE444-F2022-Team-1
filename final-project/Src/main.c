@@ -52,9 +52,11 @@ TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
 
-osThreadId defaultTaskHandle;
+osThreadId engineTaskHandle;
+osThreadId inputTaskHandle;
+osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
-MODE mode = MODE_RTOS;
+const MODE mode = MODE_RTOS;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -67,7 +69,9 @@ static void MX_DAC1_Init(void);
 static void MX_OCTOSPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
-void StartDefaultTask(void const * argument);
+void StartEngineTask(void const * argument);
+void StartInputTask(void const * argument);
+void StartOutputTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -116,6 +120,20 @@ int main(void)
   /* USER CODE BEGIN 2 */
   // startup
 
+  // start testing mode
+  if (IS_MODE_ENGINE())
+  {
+    StartEngineTask(NULL);
+  }
+  else if (IS_MODE_INPUT())
+  {
+    StartInputTask(NULL);
+  }
+  else if (IS_MODE_OUTPUT())
+  {
+    StartOutputTask(NULL);
+  }
+
   // start RTOS
   if (IS_MODE_RTOS())
   {
@@ -138,9 +156,17 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  /* definition and creation of engineTask */
+  osThreadDef(engineTask, StartEngineTask, osPriorityNormal, 0, 128);
+  engineTaskHandle = osThreadCreate(osThread(engineTask), NULL);
+
+  /* definition and creation of inputTask */
+  osThreadDef(inputTask, StartInputTask, osPriorityIdle, 0, 128);
+  inputTaskHandle = osThreadCreate(osThread(inputTask), NULL);
+
+  /* definition and creation of outputTask */
+  osThreadDef(outputTask, StartOutputTask, osPriorityIdle, 0, 128);
+  outputTaskHandle = osThreadCreate(osThread(outputTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -612,22 +638,67 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_StartEngineTask */
 /**
-  * @brief  Function implementing the defaultTask thread.
+  * @brief  Function implementing the engineTask thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
+/* USER CODE END Header_StartEngineTask */
+void StartEngineTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    if (IS_MODE_RTOS())
+    {
+      osDelay(1);
+    }
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartInputTask */
+/**
+* @brief Function implementing the inputTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartInputTask */
+void StartInputTask(void const * argument)
+{
+  /* USER CODE BEGIN StartInputTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    if (IS_MODE_RTOS())
+    {
+      osDelay(1);
+    }
+  }
+  /* USER CODE END StartInputTask */
+}
+
+/* USER CODE BEGIN Header_StartOutputTask */
+/**
+* @brief Function implementing the outputTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartOutputTask */
+void StartOutputTask(void const * argument)
+{
+  /* USER CODE BEGIN StartOutputTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    if (IS_MODE_RTOS())
+    {
+      osDelay(1);
+    }
+  }
+  /* USER CODE END StartOutputTask */
 }
 
 /**
