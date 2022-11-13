@@ -43,18 +43,22 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+typedef int MODE;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+extern MODE mode;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 #define ARRAY_LEN(a) sizeof(a) / sizeof(a[0])
 
+#define IS_MODE_RTOS()    mode & MODE_RTOS
+#define IS_MODE_INPUT()   mode & MODE_INPUT
+#define IS_MODE_ENGINE()  mode & MODE_ENGINE
+#define IS_MODE_OUTPUT()  mode & MODE_OUTPUT
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -79,7 +83,11 @@ void led_red_off();
 #define LED_GREEN_Pin GPIO_PIN_14
 #define LED_GREEN_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
-
+// MODE VARIABLES
+#define MODE_RTOS         0b0001 // Release mode
+#define MODE_TEST_INPUT   0b0010 // Mode testing input sensors
+#define MODE_TEST_ENGINE  0b0100 // Mode testing engine
+#define MODE_TEST_OUTPUT  0b1000 // Mode testing output generation
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
