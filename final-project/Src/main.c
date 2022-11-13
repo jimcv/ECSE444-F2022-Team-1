@@ -56,7 +56,19 @@ osThreadId engineTaskHandle;
 osThreadId inputTaskHandle;
 osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
+// running mode
 const MODE mode = MODE_RTOS;
+
+// absolute rotation of the user's ship
+// written to in the input thread
+// read in the engine thread
+float32_t _quaternion[4];
+
+// user object
+user _user;
+
+// enemy objects
+enemy _enemies[NUM_ENEMIES];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,25 +130,33 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-  // startup
+  // start timer interrupts
+  HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_Base_Start_IT(&htim3);
 
   // start testing mode
   if (IS_MODE_ENGINE())
   {
+    initEngine();
     StartEngineTask(NULL);
   }
   else if (IS_MODE_INPUT())
   {
+    initInput();
     StartInputTask(NULL);
   }
   else if (IS_MODE_OUTPUT())
   {
+    initOutput();
     StartOutputTask(NULL);
   }
 
   // start RTOS
   if (IS_MODE_RTOS())
   {
+    initEngine();
+    initInput();
+    initOutput();
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -178,7 +198,7 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  }
+  } // IS_MODE_RTOS()
   while (1)
   {
     /* USER CODE END WHILE */
@@ -582,6 +602,30 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+// initialize game engine
+void initEngine()
+{
+
+}
+
+// initialize input configuration
+void initInput()
+{
+  // initialize I2C peripherals
+  //if (BSP_MAGNETO_Init() != MAGNETO_OK ||
+  //    BSP_GYRO_Init() != GYRO_OK)
+  if (false)
+  {
+    Error_Handler();
+  }
+}
+
+// initialize output configuration
+void initOutput()
+{
+
+}
+
 // wrapper function to handle QSPI flash errors
 void flash_exec(uint8_t QSPI_Memory_Status)
 {
@@ -653,7 +697,7 @@ void StartEngineTask(void const * argument)
   {
     if (IS_MODE_RTOS())
     {
-      osDelay(1);
+      osDelay(1); // yield to OS
     }
   }
   /* USER CODE END 5 */
@@ -674,7 +718,7 @@ void StartInputTask(void const * argument)
   {
     if (IS_MODE_RTOS())
     {
-      osDelay(1);
+      osDelay(1); // yield to OS
     }
   }
   /* USER CODE END StartInputTask */
@@ -695,7 +739,7 @@ void StartOutputTask(void const * argument)
   {
     if (IS_MODE_RTOS())
     {
-      osDelay(1);
+      osDelay(1); // yield to OS
     }
   }
   /* USER CODE END StartOutputTask */
