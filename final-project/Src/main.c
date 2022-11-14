@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -51,8 +52,23 @@ TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
 
+osThreadId engineTaskHandle;
+osThreadId inputTaskHandle;
+osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
+// running mode
+const MODE mode = MODE_RTOS;
 
+// absolute rotation of the user's ship
+// written to in the input thread
+// read in the engine thread
+float32_t _quaternion[4];
+
+// user object
+user _user;
+
+// enemy objects
+enemy _enemies[NUM_ENEMIES];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -65,6 +81,10 @@ static void MX_DAC1_Init(void);
 static void MX_OCTOSPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
+void StartEngineTask(void const * argument);
+void StartInputTask(void const * argument);
+void StartOutputTask(void const * argument);
+
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -110,11 +130,75 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+  // start timer interrupts
+  HAL_TIM_Base_Start_IT(&htim2);
+  HAL_TIM_Base_Start_IT(&htim3);
 
+  // start testing mode
+  if (IS_MODE_ENGINE())
+  {
+    initEngine();
+    StartEngineTask(NULL);
+  }
+  else if (IS_MODE_INPUT())
+  {
+    initInput();
+    StartInputTask(NULL);
+  }
+  else if (IS_MODE_OUTPUT())
+  {
+    initOutput();
+    StartOutputTask(NULL);
+  }
+
+  // start RTOS
+  if (IS_MODE_RTOS())
+  {
+    initEngine();
+    initInput();
+    initOutput();
   /* USER CODE END 2 */
 
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* definition and creation of engineTask */
+  osThreadDef(engineTask, StartEngineTask, osPriorityNormal, 0, 128);
+  engineTaskHandle = osThreadCreate(osThread(engineTask), NULL);
+
+  /* definition and creation of inputTask */
+  osThreadDef(inputTask, StartInputTask, osPriorityIdle, 0, 128);
+  inputTaskHandle = osThreadCreate(osThread(inputTask), NULL);
+
+  /* definition and creation of outputTask */
+  osThreadDef(outputTask, StartOutputTask, osPriorityIdle, 0, 128);
+  outputTaskHandle = osThreadCreate(osThread(outputTask), NULL);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  } // IS_MODE_RTOS()
   while (1)
   {
     /* USER CODE END WHILE */
@@ -464,7 +548,7 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
 }
@@ -511,12 +595,36 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(LED_GREEN_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 
 /* USER CODE BEGIN 4 */
+
+// initialize game engine
+void initEngine()
+{
+
+}
+
+// initialize input configuration
+void initInput()
+{
+  // initialize I2C peripherals
+  //if (BSP_MAGNETO_Init() != MAGNETO_OK ||
+  //    BSP_GYRO_Init() != GYRO_OK)
+  if (false)
+  {
+    Error_Handler();
+  }
+}
+
+// initialize output configuration
+void initOutput()
+{
+
+}
 
 // wrapper function to handle QSPI flash errors
 void flash_exec(uint8_t QSPI_Memory_Status)
@@ -573,6 +681,69 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 }
 
 /* USER CODE END 4 */
+
+/* USER CODE BEGIN Header_StartEngineTask */
+/**
+  * @brief  Function implementing the engineTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_StartEngineTask */
+void StartEngineTask(void const * argument)
+{
+  /* USER CODE BEGIN 5 */
+  /* Infinite loop */
+  for(;;)
+  {
+    if (IS_MODE_RTOS())
+    {
+      osDelay(1); // yield to OS
+    }
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_StartInputTask */
+/**
+* @brief Function implementing the inputTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartInputTask */
+void StartInputTask(void const * argument)
+{
+  /* USER CODE BEGIN StartInputTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    if (IS_MODE_RTOS())
+    {
+      osDelay(1); // yield to OS
+    }
+  }
+  /* USER CODE END StartInputTask */
+}
+
+/* USER CODE BEGIN Header_StartOutputTask */
+/**
+* @brief Function implementing the outputTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartOutputTask */
+void StartOutputTask(void const * argument)
+{
+  /* USER CODE BEGIN StartOutputTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    if (IS_MODE_RTOS())
+    {
+      osDelay(1); // yield to OS
+    }
+  }
+  /* USER CODE END StartOutputTask */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.
