@@ -50,15 +50,15 @@ typedef int MODE;
 typedef struct __user
 {
   // Health.
-  uint32_t health;
+  int32_t health;
   // x-coordinate of the user.
-  uint32_t x;
+  int32_t x;
   // y-coordinate of the user.
-  uint32_t y;
+  int32_t y;
   // x-velocity of the user.
-  uint32_t vel_x;
+  int32_t vel_x;
   // y-velcoity of the user.
-  uint32_t vel_y;
+  int32_t vel_y;
 } user;
 
 // Model for an enemy.
@@ -67,15 +67,15 @@ typedef struct __enemy
   // Enabled.
   bool enabled;
   // Health.
-  uint32_t health;
+  int32_t health;
   // x-coordinate of the enemy.
-  uint32_t x;
+  int32_t x;
   // y-coordinate of the enemy.
-  uint32_t y;
+  int32_t y;
   // x-velocity of the enemy.
-  uint32_t vel_x;
+  int32_t vel_x;
   // y-velcoity of the enemy.
-  uint32_t vel_y;
+  int32_t vel_y;
 } enemy;
 /* USER CODE END ET */
 
