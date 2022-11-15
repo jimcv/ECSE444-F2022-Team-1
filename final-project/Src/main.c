@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "uart_output.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -149,7 +149,7 @@ int main(void)
   }
   else if (IS_MODE_OUTPUT())
   {
-    initOutput();
+    initOutput(&huart1);
     StartOutputTask(NULL);
   }
 
@@ -158,7 +158,7 @@ int main(void)
   {
     initEngine();
     initInput();
-    initOutput();
+    initOutput(&huart1);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -747,7 +747,9 @@ void StartOutputTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    delay(1);
+    delay(1000);
+    resetCursor();
+    updateBuffer(&_user, _enemies, _projectiles);
   }
   /* USER CODE END StartOutputTask */
 }
