@@ -69,6 +69,10 @@ user _user;
 
 // enemy objects
 enemy _enemies[NUM_ENEMIES];
+
+char buf[120];
+uint16_t buf_len;
+float euler[3];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -130,9 +134,14 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+  HAL_Delay(500);
+  fusion_init(0);
+
   // start timer interrupts
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_Base_Start_IT(&htim3);
+
+  led_red_off();
 
   // start testing mode
   if (IS_MODE_ENGINE())
@@ -677,6 +686,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM3)
 	{
 		// TIM3 interrupt
+		fusion_update();
+		fusion_get_euler(euler, 0);
+		buf_len = snprintf(buf, sizeof(buf), "X: %8d  Y: %8d  Z: %8d\n", (int)euler[0], (int)euler[1], (int)euler[2]);
+		HAL_UART_Transmit(&huart1, (uint8_t *)buf, buf_len, 10);
 	}
 }
 
