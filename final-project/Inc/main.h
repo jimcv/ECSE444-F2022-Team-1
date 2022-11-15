@@ -35,6 +35,8 @@ extern "C" {
 #include "stm32l4s5i_iot01_gyro.h"
 #include "stm32l4s5i_iot01_magneto.h"
 #include "stm32l4s5i_iot01_qspi.h"
+#include "sensor_fusion.h"
+#include <stdio.h>
 
 #define ARM_MATH_CM4
 #include "arm_math.h"
