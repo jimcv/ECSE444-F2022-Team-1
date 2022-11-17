@@ -749,7 +749,7 @@ void StartOutputTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    delay(1000);
+    delay(1000 / REFRESH_RATE);
     resetCursor();
     updateBuffer(&_user, _enemies, _projectiles);
   }
