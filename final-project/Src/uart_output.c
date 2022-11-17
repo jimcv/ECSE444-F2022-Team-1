@@ -47,6 +47,13 @@ void initOutput(UART_HandleTypeDef *huart)
 
 void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles[NUM_PROJECTILES])
 {
+  // clear objects from buffer
+  for (int i = 0; i < MAX_BUF_SIZE; i++) {
+    if (_buf[i] != BACKGROUND && _buf[i] != BORDER) {
+      _buf[i] = BACKGROUND;
+    }
+  }
+
   // draw user
   int32_t x = *&user->rb.x + 1; // add one to offset from border
   int32_t y = *&user->rb.y + 1; // add one to offset from border
