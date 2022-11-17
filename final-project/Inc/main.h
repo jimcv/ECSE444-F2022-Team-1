@@ -188,10 +188,13 @@ void led_red_off();
  * characters to clear the field.
  */
 #define REFRESH_RATE (14400 / (2 * MAX_BUF_SIZE))
-// game objects
+// game characters
 #define USER '^'
 #define ENEMY '@'
 #define PROJECTILE '|'
+// playing field characters
+#define BACKGROUND ' '
+#define BORDER '*'
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

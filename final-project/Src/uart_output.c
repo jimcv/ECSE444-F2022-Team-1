@@ -11,10 +11,6 @@ uint16_t _n = MAX_BUF_SIZE;
 uint8_t _buf[MAX_BUF_SIZE];
 uint8_t _clearBuf[MAX_BUF_SIZE];
 
-// characters
-char background = ' ';
-char border = '*';
-
 void initOutput(UART_HandleTypeDef *huart)
 {
   _huart = huart;
@@ -22,14 +18,14 @@ void initOutput(UART_HandleTypeDef *huart)
   _n *= (uint16_t) SCR_HEIGHT;
 
   // clear buffer
-  memset(_buf, border, _n);
+  memset(_buf, BORDER, _n);
 
   // write initial playing area
   int32_t i = 1;
   for (uint32_t r = 1; r < SCR_HEIGHT - 1; r++)
   {
     i += SCR_WIDTH;
-    memset(_buf + i, background, SCR_WIDTH - 4);
+    memset(_buf + i, BACKGROUND, SCR_WIDTH - 4);
   }
 
   // write carriage return characters
