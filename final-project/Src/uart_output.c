@@ -49,9 +49,31 @@ void initOutput(UART_HandleTypeDef *huart)
   ITM_Port32(31) = _n;
 }
 
-void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles[NUM_PROJECTILES])
-{
-  transmitBuffer(_buf, _n);
+void updateBuffer(user *user, enemy enemies[NUM_ENEMIES],
+		projectile projectiles[NUM_PROJECTILES]) {
+	// draw user
+	int32_t x = *&user->rb.x + 1; // add one to offset from border
+	int32_t y = *&user->rb.y + 1; // add one to offset from border
+	_buf[x + y * SCR_WIDTH] = USER;
+
+	// draw enemies
+	for (int i = 0; i < NUM_ENEMIES; i++) {
+		if (enemies[i].enabled) {
+			x = enemies[i].rb.x + 1;
+			y = enemies[i].rb.y + 1;
+			_buf[x + y * SCR_WIDTH] = ENEMY;
+		}
+	}
+
+	// draw projectiles
+	for (int i = 0; i < NUM_PROJECTILES; i++) {
+		if (projectiles[i].enabled) {
+			x = projectiles[i].rb.x + 1;
+			y = projectiles[i].rb.y + 1;
+			_buf[x + y * SCR_WIDTH] = PROJECTILE;
+		}
+	}
+	transmitBuffer(_buf, _n);
 }
 
 void transmitBuffer(uint8_t *buf, uint16_t n)
