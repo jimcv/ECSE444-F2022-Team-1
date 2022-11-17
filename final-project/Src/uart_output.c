@@ -49,7 +49,7 @@ void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles
 {
   // clear objects from buffer
   for (int i = 0; i < MAX_BUF_SIZE; i++) {
-    if (_buf[i] != BACKGROUND && _buf[i] != BORDER) {
+    if (_buf[i] != BACKGROUND && _buf[i] != BORDER && _buf[i] != '\r' && _buf[i] != 'n') {
       _buf[i] = BACKGROUND;
     }
   }
