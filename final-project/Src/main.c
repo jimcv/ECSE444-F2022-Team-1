@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
- ******************************************************************************
- * @file           : main.c
- * @brief          : Main program body
- ******************************************************************************
- * @attention
- *
- * Copyright (c) 2022 STMicroelectronics.
- * All rights reserved.
- *
- * This software is licensed under terms that can be found in the LICENSE file
- * in the root directory of this software component.
- * If no LICENSE file comes with this software, it is provided AS-IS.
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2022 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -58,7 +58,7 @@ osThreadId inputTaskHandle;
 osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
 // running mode
-const MODE mode = MODE_RTOS;
+const MODE mode = MODE_TEST_OUTPUT;
 
 // game objects
 user _user;
@@ -76,9 +76,9 @@ static void MX_DAC1_Init(void);
 static void MX_OCTOSPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
-void StartEngineTask(void const *argument);
-void StartInputTask(void const *argument);
-void StartOutputTask(void const *argument);
+void StartEngineTask(void const * argument);
+void StartInputTask(void const * argument);
+void StartOutputTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -90,9 +90,9 @@ void StartOutputTask(void const *argument);
 /* USER CODE END 0 */
 
 /**
- * @brief  The application entry point.
- * @retval int
- */
+  * @brief  The application entry point.
+  * @retval int
+  */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
@@ -150,6 +150,14 @@ int main(void)
   }
   else if (IS_MODE_OUTPUT())
   {
+	_user.rb.x = 5;
+	_user.rb.y = 5;
+	_enemies[0].enabled = true;
+	_enemies[0].rb.x = 10;
+	_enemies[0].rb.y = 10;
+	_projectiles[0].enabled = true;
+	_projectiles[0].rb.x = 12;
+	_projectiles[0].rb.y = 12;
     initOutput(&huart1);
     StartOutputTask(NULL);
   }
@@ -160,47 +168,47 @@ int main(void)
     initEngine();
     initInput();
     initOutput(&huart1);
-    /* USER CODE END 2 */
+  /* USER CODE END 2 */
 
-    /* USER CODE BEGIN RTOS_MUTEX */
-    /* add mutexes, ... */
-    /* USER CODE END RTOS_MUTEX */
+  /* USER CODE BEGIN RTOS_MUTEX */
+  /* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
 
-    /* USER CODE BEGIN RTOS_SEMAPHORES */
-    /* add semaphores, ... */
-    /* USER CODE END RTOS_SEMAPHORES */
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
 
-    /* USER CODE BEGIN RTOS_TIMERS */
-    /* start timers, add new ones, ... */
-    /* USER CODE END RTOS_TIMERS */
+  /* USER CODE BEGIN RTOS_TIMERS */
+  /* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
 
-    /* USER CODE BEGIN RTOS_QUEUES */
-    /* add queues, ... */
-    /* USER CODE END RTOS_QUEUES */
+  /* USER CODE BEGIN RTOS_QUEUES */
+  /* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
 
-    /* Create the thread(s) */
-    /* definition and creation of engineTask */
-    osThreadDef(engineTask, StartEngineTask, osPriorityNormal, 0, 128);
-    engineTaskHandle = osThreadCreate(osThread(engineTask), NULL);
+  /* Create the thread(s) */
+  /* definition and creation of engineTask */
+  osThreadDef(engineTask, StartEngineTask, osPriorityNormal, 0, 128);
+  engineTaskHandle = osThreadCreate(osThread(engineTask), NULL);
 
-    /* definition and creation of inputTask */
-    osThreadDef(inputTask, StartInputTask, osPriorityIdle, 0, 128);
-    inputTaskHandle = osThreadCreate(osThread(inputTask), NULL);
+  /* definition and creation of inputTask */
+  osThreadDef(inputTask, StartInputTask, osPriorityIdle, 0, 128);
+  inputTaskHandle = osThreadCreate(osThread(inputTask), NULL);
 
-    /* definition and creation of outputTask */
-    osThreadDef(outputTask, StartOutputTask, osPriorityIdle, 0, 128);
-    outputTaskHandle = osThreadCreate(osThread(outputTask), NULL);
+  /* definition and creation of outputTask */
+  osThreadDef(outputTask, StartOutputTask, osPriorityIdle, 0, 128);
+  outputTaskHandle = osThreadCreate(osThread(outputTask), NULL);
 
-    /* USER CODE BEGIN RTOS_THREADS */
-    /* add threads, ... */
-    /* USER CODE END RTOS_THREADS */
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
 
-    /* Start scheduler */
-    osKernelStart();
+  /* Start scheduler */
+  osKernelStart();
 
-    /* We should never get here as control is now taken by the scheduler */
-    /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
+  /* We should never get here as control is now taken by the scheduler */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
   } // IS_MODE_RTOS()
   while (1)
   {
@@ -212,26 +220,24 @@ int main(void)
 }
 
 /**
- * @brief System Clock Configuration
- * @retval None
- */
+  * @brief System Clock Configuration
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct =
-  { 0 };
-  RCC_ClkInitTypeDef RCC_ClkInitStruct =
-  { 0 };
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
-   */
+  */
   if (HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST) != HAL_OK)
   {
     Error_Handler();
   }
 
   /** Initializes the RCC Oscillators according to the specified parameters
-   * in the RCC_OscInitTypeDef structure.
-   */
+  * in the RCC_OscInitTypeDef structure.
+  */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
   RCC_OscInitStruct.MSIState = RCC_MSI_ON;
   RCC_OscInitStruct.MSICalibrationValue = 0;
@@ -249,8 +255,9 @@ void SystemClock_Config(void)
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
-   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
@@ -263,10 +270,10 @@ void SystemClock_Config(void)
 }
 
 /**
- * @brief DAC1 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief DAC1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_DAC1_Init(void)
 {
 
@@ -274,15 +281,14 @@ static void MX_DAC1_Init(void)
 
   /* USER CODE END DAC1_Init 0 */
 
-  DAC_ChannelConfTypeDef sConfig =
-  { 0 };
+  DAC_ChannelConfTypeDef sConfig = {0};
 
   /* USER CODE BEGIN DAC1_Init 1 */
 
   /* USER CODE END DAC1_Init 1 */
 
   /** DAC Initialization
-   */
+  */
   hdac1.Instance = DAC1;
   if (HAL_DAC_Init(&hdac1) != HAL_OK)
   {
@@ -290,7 +296,7 @@ static void MX_DAC1_Init(void)
   }
 
   /** DAC channel OUT1 config
-   */
+  */
   sConfig.DAC_SampleAndHold = DAC_SAMPLEANDHOLD_DISABLE;
   sConfig.DAC_Trigger = DAC_TRIGGER_T2_TRGO;
   sConfig.DAC_HighFrequency = DAC_HIGH_FREQUENCY_INTERFACE_MODE_ABOVE_80MHZ;
@@ -308,10 +314,10 @@ static void MX_DAC1_Init(void)
 }
 
 /**
- * @brief I2C2 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief I2C2 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_I2C2_Init(void)
 {
 
@@ -337,14 +343,14 @@ static void MX_I2C2_Init(void)
   }
 
   /** Configure Analogue filter
-   */
+  */
   if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     Error_Handler();
   }
 
   /** Configure Digital filter
-   */
+  */
   if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
   {
     Error_Handler();
@@ -356,10 +362,10 @@ static void MX_I2C2_Init(void)
 }
 
 /**
- * @brief OCTOSPI1 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief OCTOSPI1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_OCTOSPI1_Init(void)
 {
 
@@ -367,8 +373,7 @@ static void MX_OCTOSPI1_Init(void)
 
   /* USER CODE END OCTOSPI1_Init 0 */
 
-  OSPIM_CfgTypeDef OSPIM_Cfg_Struct =
-  { 0 };
+  OSPIM_CfgTypeDef OSPIM_Cfg_Struct = {0};
 
   /* USER CODE BEGIN OCTOSPI1_Init 1 */
 
@@ -405,10 +410,10 @@ static void MX_OCTOSPI1_Init(void)
 }
 
 /**
- * @brief TIM2 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_TIM2_Init(void)
 {
 
@@ -416,10 +421,8 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 0 */
 
-  TIM_ClockConfigTypeDef sClockSourceConfig =
-  { 0 };
-  TIM_MasterConfigTypeDef sMasterConfig =
-  { 0 };
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
 
   /* USER CODE BEGIN TIM2_Init 1 */
 
@@ -452,10 +455,10 @@ static void MX_TIM2_Init(void)
 }
 
 /**
- * @brief TIM3 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_TIM3_Init(void)
 {
 
@@ -463,10 +466,8 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 0 */
 
-  TIM_ClockConfigTypeDef sClockSourceConfig =
-  { 0 };
-  TIM_MasterConfigTypeDef sMasterConfig =
-  { 0 };
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
 
   /* USER CODE BEGIN TIM3_Init 1 */
 
@@ -499,10 +500,10 @@ static void MX_TIM3_Init(void)
 }
 
 /**
- * @brief USART1 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_USART1_UART_Init(void)
 {
 
@@ -547,8 +548,8 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
- * Enable DMA controller clock
- */
+  * Enable DMA controller clock
+  */
 static void MX_DMA_Init(void)
 {
 
@@ -564,14 +565,13 @@ static void MX_DMA_Init(void)
 }
 
 /**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_InitStruct =
-  { 0 };
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
@@ -647,55 +647,53 @@ void delay(uint32_t delay)
 // wrapper function to handle HAL errors
 void hal_exec(uint8_t HAL_Status)
 {
-  if (HAL_Status != HAL_OK)
-    Error_Handler();
+  if (HAL_Status != HAL_OK) Error_Handler();
 }
 
 // wrapper function to handle QSPI flash errors
 void flash_exec(uint8_t QSPI_Memory_Status)
 {
-  if (QSPI_Memory_Status != QSPI_OK)
-    Error_Handler();
+	if (QSPI_Memory_Status != QSPI_OK) Error_Handler();
 }
 
 // generate sine wave data in the buffer
 void gen_sine(uint32_t *buf, uint32_t buf_size, float sine_step, uint32_t dac_max)
 {
-  uint32_t dac_offset = dac_max / 2;
-  float sine_x = 0.0;
-  for (int i = 0; i < buf_size; i++)
-  {
-    buf[i] = (uint32_t) (arm_sin_f32(sine_x) * dac_offset + dac_offset);
-    sine_x += sine_step;
-  }
+	uint32_t dac_offset = dac_max / 2;
+	float sine_x = 0.0;
+	for (int i = 0; i < buf_size; i++)
+	{
+		buf[i] = (uint32_t)(arm_sin_f32(sine_x) * dac_offset + dac_offset);
+		sine_x += sine_step;
+	}
 }
 
 void led_green_on()
 {
-  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_SET);
 }
 
 void led_green_off()
 {
-  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
 }
 
 void led_red_on()
 {
-  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
 }
 
 void led_red_off()
 {
-  HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_SET);
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  if (GPIO_Pin == USER_BUTTON_Pin)
-  {
-    // do something when USER_BUTTON is pressed
-  }
+	if (GPIO_Pin == USER_BUTTON_Pin)
+	{
+		// do something when USER_BUTTON is pressed
+	}
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
@@ -711,16 +709,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 /* USER CODE BEGIN Header_StartEngineTask */
 /**
- * @brief  Function implementing the engineTask thread.
- * @param  argument: Not used
- * @retval None
- */
+  * @brief  Function implementing the engineTask thread.
+  * @param  argument: Not used
+  * @retval None
+  */
 /* USER CODE END Header_StartEngineTask */
-void StartEngineTask(void const *argument)
+void StartEngineTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
-  for (;;)
+  for(;;)
   {
     delay(1);
   }
@@ -729,16 +727,16 @@ void StartEngineTask(void const *argument)
 
 /* USER CODE BEGIN Header_StartInputTask */
 /**
- * @brief Function implementing the inputTask thread.
- * @param argument: Not used
- * @retval None
- */
+* @brief Function implementing the inputTask thread.
+* @param argument: Not used
+* @retval None
+*/
 /* USER CODE END Header_StartInputTask */
-void StartInputTask(void const *argument)
+void StartInputTask(void const * argument)
 {
   /* USER CODE BEGIN StartInputTask */
   /* Infinite loop */
-  for (;;)
+  for(;;)
   {
     delay(1);
   }
@@ -747,17 +745,17 @@ void StartInputTask(void const *argument)
 
 /* USER CODE BEGIN Header_StartOutputTask */
 /**
- * @brief Function implementing the outputTask thread.
- * @param argument: Not used
- * @retval None
- */
+* @brief Function implementing the outputTask thread.
+* @param argument: Not used
+* @retval None
+*/
 /* USER CODE END Header_StartOutputTask */
-void StartOutputTask(void const *argument)
+void StartOutputTask(void const * argument)
 {
   /* USER CODE BEGIN StartOutputTask */
 
   /* Infinite loop */
-  for (;;)
+  for(;;)
   {
     delay(1000 / REFRESH_RATE);
     resetCursor();
@@ -767,9 +765,9 @@ void StartOutputTask(void const *argument)
 }
 
 /**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
