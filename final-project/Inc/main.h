@@ -159,8 +159,8 @@ void led_red_off();
 // ENGINE DEFINES
 // ================
 // dimensions of the playing field
-#define MAX_X 60
-#define MAX_Y 20
+#define MAX_X 20
+#define MAX_Y 15
 #define NUM_ENEMIES 5
 #define NUM_PROJECTILES 10
 
