@@ -23,6 +23,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "uart_output.h"
+#include "sensor_fusion.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -58,11 +59,6 @@ osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
 // running mode
 const MODE mode = MODE_RTOS;
-
-// absolute rotation of the user's ship
-// written to in the input thread
-// read in the engine thread
-float32_t _quaternion[4];
 
 // game objects
 user _user;
@@ -129,6 +125,11 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+
+  // initialize sensors, delay prevents button bounce to affect sensor calibration
+  HAL_Delay(500);
+  fusion_init(0);
+
   // start timer interrupts
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_Base_Start_IT(&htim3);
@@ -691,7 +692,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM3)
 	{
-		// TIM3 interrupt
+		// TIM3 interrupt: sensor control
+		fusion_update();
 	}
 }
 
