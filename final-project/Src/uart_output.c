@@ -8,8 +8,8 @@ UART_HandleTypeDef *_huart;
 
 // transmission buffer
 uint16_t _n = MAX_BUF_SIZE;
-uint8_t _buf[MAX_BUF_SIZE] = {0};
-uint8_t _clearBuf[MAX_BUF_SIZE] = {0};
+uint8_t _buf[MAX_BUF_SIZE];
+uint8_t _clearBuf[MAX_BUF_SIZE];
 
 // characters
 char background = ' ';
@@ -18,8 +18,8 @@ char border = '*';
 void initOutput(UART_HandleTypeDef *huart)
 {
   _huart = huart;
-  _n = (uint16_t)SCR_WIDTH;
-  _n *= (uint16_t)SCR_HEIGHT;
+  _n = (uint16_t) SCR_WIDTH;
+  _n *= (uint16_t) SCR_HEIGHT;
 
   // clear buffer
   memset(_buf, border, _n);
@@ -38,7 +38,7 @@ void initOutput(UART_HandleTypeDef *huart)
   {
     i += SCR_WIDTH;
     _buf[i] = '\n';
-    _buf[i+1] = '\r';
+    _buf[i + 1] = '\r';
   }
 
   // set clear buffer
@@ -49,31 +49,35 @@ void initOutput(UART_HandleTypeDef *huart)
   ITM_Port32(31) = _n;
 }
 
-void updateBuffer(user *user, enemy enemies[NUM_ENEMIES],
-		projectile projectiles[NUM_PROJECTILES]) {
-	// draw user
-	int32_t x = *&user->rb.x + 1; // add one to offset from border
-	int32_t y = *&user->rb.y + 1; // add one to offset from border
-	_buf[x + y * SCR_WIDTH] = USER;
+void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles[NUM_PROJECTILES])
+{
+  // draw user
+  int32_t x = *&user->rb.x + 1; // add one to offset from border
+  int32_t y = *&user->rb.y + 1; // add one to offset from border
+  _buf[x + y * SCR_WIDTH] = USER;
 
-	// draw enemies
-	for (int i = 0; i < NUM_ENEMIES; i++) {
-		if (enemies[i].enabled) {
-			x = enemies[i].rb.x + 1;
-			y = enemies[i].rb.y + 1;
-			_buf[x + y * SCR_WIDTH] = ENEMY;
-		}
-	}
+  // draw enemies
+  for (int i = 0; i < NUM_ENEMIES; i++)
+  {
+    if (enemies[i].enabled)
+    {
+      x = enemies[i].rb.x + 1;
+      y = enemies[i].rb.y + 1;
+      _buf[x + y * SCR_WIDTH] = ENEMY;
+    }
+  }
 
-	// draw projectiles
-	for (int i = 0; i < NUM_PROJECTILES; i++) {
-		if (projectiles[i].enabled) {
-			x = projectiles[i].rb.x + 1;
-			y = projectiles[i].rb.y + 1;
-			_buf[x + y * SCR_WIDTH] = PROJECTILE;
-		}
-	}
-	transmitBuffer(_buf, _n);
+  // draw projectiles
+  for (int i = 0; i < NUM_PROJECTILES; i++)
+  {
+    if (projectiles[i].enabled)
+    {
+      x = projectiles[i].rb.x + 1;
+      y = projectiles[i].rb.y + 1;
+      _buf[x + y * SCR_WIDTH] = PROJECTILE;
+    }
+  }
+  transmitBuffer(_buf, _n);
 }
 
 void transmitBuffer(uint8_t *buf, uint16_t n)
