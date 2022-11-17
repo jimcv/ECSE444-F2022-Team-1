@@ -46,19 +46,26 @@ extern "C" {
 typedef char bool;
 typedef int MODE;
 
+// Model for a rigid body.
+typedef struct __rigid_body
+{
+  // x-position.
+  int32_t x;
+  // y-coordinate.
+  int32_t y;
+  // x-velocity.
+  int32_t vel_x;
+  // y-velocity.
+  int32_t vel_y;
+} rigid_body;
+
 // Model for the user's character.
 typedef struct __user
 {
   // Health.
   int32_t health;
-  // x-coordinate of the user.
-  int32_t x;
-  // y-coordinate of the user.
-  int32_t y;
-  // x-velocity of the user.
-  int32_t vel_x;
-  // y-velcoity of the user.
-  int32_t vel_y;
+  // Rigid body for the user.
+  rigid_body rb;
 } user;
 
 // Model for an enemy.
@@ -68,15 +75,18 @@ typedef struct __enemy
   bool enabled;
   // Health.
   int32_t health;
-  // x-coordinate of the enemy.
-  int32_t x;
-  // y-coordinate of the enemy.
-  int32_t y;
-  // x-velocity of the enemy.
-  int32_t vel_x;
-  // y-velcoity of the enemy.
-  int32_t vel_y;
+  // Rigid body for the enemy.
+  rigid_body rb;
 } enemy;
+
+// Model for a projectile.
+typedef struct __projectile
+{
+  // Enabled.
+  bool enabled;
+  // Rigid body for the projectile.
+  rigid_body rb;
+} projectile;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -92,6 +102,9 @@ extern const MODE mode;
 #define IS_MODE_INPUT()   mode & MODE_TEST_INPUT
 #define IS_MODE_ENGINE()  mode & MODE_TEST_ENGINE
 #define IS_MODE_OUTPUT()  mode & MODE_TEST_OUTPUT
+
+// Debugging port
+#define ITM_Port32(n) (*((volatile unsigned long *) (0xE0000000+4*n)))
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
@@ -100,8 +113,9 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 void initEngine();
 void initInput();
-void initOutput();
 
+void delay(uint32_t delay);
+void hal_exec(uint8_t HAL_Status);
 void flash_exec(uint8_t QSPI_Memory_Status);
 void gen_sine(uint32_t *buf, uint32_t buf_size, float step, uint32_t dac_max);
 void led_green_on();
@@ -123,29 +137,41 @@ void led_red_off();
 #define false (bool)0
 #define true  !false
 
+// ================
 // MODE VARIABLES
+// ================
 #define MODE_RTOS         0b0001 // Release mode
 #define MODE_TEST_INPUT   0b0010 // Mode testing input sensors
 #define MODE_TEST_ENGINE  0b0100 // Mode testing engine
 #define MODE_TEST_OUTPUT  0b1000 // Mode testing output generation
 
+// ================
 // RTOS DEFINES
+// ================
 #define OS_TIMEOUT 30000
 #define IRQ_TIMEOUT 5
 
+// ================
 // INPUT DEFINES
+// ================
 
+// ================
 // ENGINE DEFINES
-#define MIN_X 0
-#define MAX_X 50
-#define MIN_Y 0
-#define MAX_Y 50
+// ================
+// dimensions of the playing field
+#define MAX_X 20
+#define MAX_Y 15
 #define NUM_ENEMIES 5
+#define NUM_PROJECTILES 10
 
+// ================
 // OUTPUT DEFINES
+// ================
 #define UART_TIMEOUT 30000
-#define SCR_WIDTH 50
-#define SCR_HEIGHT 50
+// dimensions of the buffer
+#define MAX_BUF_SIZE 1024
+#define SCR_WIDTH MAX_X + 4
+#define SCR_HEIGHT MAX_Y + 2
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
