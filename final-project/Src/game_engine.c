@@ -7,6 +7,7 @@
 
 /* Private Includes ------------------------ */
 #include <stdio.h>
+#include <stdlib.h>
 
 /* Private Defines ------------------------- */
 //enemy
@@ -15,7 +16,7 @@
 //player
 #define MAX_PLAYERHP 5
 //projectile
-#define MAX_PROJECTILE 5
+#define MAX_PROJECTILES 5
 
 /* Private Variable ------------------------ */
 enum entity { player, enemy };
@@ -33,12 +34,14 @@ typedef struct ENTITY {
 typedef struct PROJECTILE {
 	int posit_x;
 	int posit_y;
+	int enable;
 }projectile_t;
 
 /* Public entities ------------------------- */
 entity_t enemyList[MAX_NUM_ENEMIES];
 entity_t playerChar;
-projectile_t projectileList[MAX_PROJECTILE];
+projectile_t projectileList[MAX_PROJECTILES];
+int numProjectiles = 0;
 
 //Player functions
 void createPlayer(){
@@ -69,20 +72,34 @@ void createEnemies() {
 entity_t* getEnemyList(){
 	return enemyList;
 }
-//Movement functions
-void moveRight(entity_t entity){
-	entity.posit_x++;
+//Projectile functions
+void createProjectile(int x, int y){
+	projectile_t newProjectile;
+	newProjectile.posit_x = x;
+	newProjectile.posit_y = y;
+	newProjectile.enable = 1;
+	projectileList[numProjectiles] = newProjectile;
+	numProjectiles++;
 }
-void moveLeft(entity_t entity){
-	entity.posit_x--;
+//Movement functions
+void moveRight(entity_t* entity){
+	entity->posit_x++;
+}
+void moveLeft(entity_t* entity){
+	entity->posit_x--;
 }
 //Collision detections
 void collisionDetection() {
-	for (int j = 0; j < MAX_PROJECTILE; j++) {
-		if(projectileList[j].posit_x == playerChar.posit_y && projectileList[j].posit_x == playerChar.posit_y){
+	for (int j = 0; j < MAX_PROJECTILES; j++) {
+		if(projectileList[j].posit_x == playerChar.posit_x && projectileList[j].posit_y == playerChar.posit_y){
 			if(playerChar.health > 0){
+				projectileList[j].enable = 0;
 				playerChar.health--;
 			}
 		}
 	}
+}
+//Update Game
+void update(){
+
 }
