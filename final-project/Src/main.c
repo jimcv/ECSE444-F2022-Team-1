@@ -58,7 +58,7 @@ osThreadId inputTaskHandle;
 osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
 // running mode
-const MODE mode = MODE_RTOS;
+const MODE mode = MODE_TEST_OUTPUT;
 
 // game objects
 user _user;
@@ -749,7 +749,7 @@ void StartOutputTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    delay(1000);
+    delay(1000 / REFRESH_RATE);
     resetCursor();
     updateBuffer(&_user, _enemies, _projectiles);
   }
