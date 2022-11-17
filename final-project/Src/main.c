@@ -22,7 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "uart_output.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -64,11 +64,10 @@ const MODE mode = MODE_RTOS;
 // read in the engine thread
 float32_t _quaternion[4];
 
-// user object
+// game objects
 user _user;
-
-// enemy objects
 enemy _enemies[NUM_ENEMIES];
+projectile _projectiles[NUM_PROJECTILES];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -134,6 +133,9 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_Base_Start_IT(&htim3);
 
+  // turn red LED off
+  led_red_off();
+
   // start testing mode
   if (IS_MODE_ENGINE())
   {
@@ -147,7 +149,7 @@ int main(void)
   }
   else if (IS_MODE_OUTPUT())
   {
-    initOutput();
+    initOutput(&huart1);
     StartOutputTask(NULL);
   }
 
@@ -156,7 +158,7 @@ int main(void)
   {
     initEngine();
     initInput();
-    initOutput();
+    initOutput(&huart1);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -620,10 +622,23 @@ void initInput()
   }
 }
 
-// initialize output configuration
-void initOutput()
+// delay
+void delay(uint32_t delay)
 {
+  if (IS_MODE_RTOS())
+  {
+    osDelay(delay);
+  }
+  else
+  {
+    HAL_Delay(delay);
+  }
+}
 
+// wrapper function to handle HAL errors
+void hal_exec(uint8_t HAL_Status)
+{
+  if (HAL_Status != HAL_OK) Error_Handler();
 }
 
 // wrapper function to handle QSPI flash errors
@@ -695,10 +710,7 @@ void StartEngineTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    if (IS_MODE_RTOS())
-    {
-      osDelay(1); // yield to OS
-    }
+    delay(1);
   }
   /* USER CODE END 5 */
 }
@@ -716,10 +728,7 @@ void StartInputTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    if (IS_MODE_RTOS())
-    {
-      osDelay(1); // yield to OS
-    }
+    delay(1);
   }
   /* USER CODE END StartInputTask */
 }
@@ -734,13 +743,13 @@ void StartInputTask(void const * argument)
 void StartOutputTask(void const * argument)
 {
   /* USER CODE BEGIN StartOutputTask */
+
   /* Infinite loop */
   for(;;)
   {
-    if (IS_MODE_RTOS())
-    {
-      osDelay(1); // yield to OS
-    }
+    delay(1000);
+    resetCursor();
+    updateBuffer(&_user, _enemies, _projectiles);
   }
   /* USER CODE END StartOutputTask */
 }
