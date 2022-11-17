@@ -150,6 +150,14 @@ int main(void)
   }
   else if (IS_MODE_OUTPUT())
   {
+	_user.rb.x = 5;
+	_user.rb.y = 5;
+	_enemies[0].enabled = true;
+	_enemies[0].rb.x = 10;
+	_enemies[0].rb.y = 10;
+	_projectiles[0].enabled = true;
+	_projectiles[0].rb.x = 12;
+	_projectiles[0].rb.y = 12;
     initOutput(&huart1);
     StartOutputTask(NULL);
   }
