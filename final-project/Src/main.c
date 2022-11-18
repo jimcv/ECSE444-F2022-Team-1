@@ -57,6 +57,7 @@ DMA_HandleTypeDef hdma_usart1_tx;
 
 osThreadId engineTaskHandle;
 osThreadId inputTaskHandle;
+osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
 // running mode
 const MODE mode = MODE_RTOS;
@@ -84,6 +85,7 @@ static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 void StartEngineTask(void const * argument);
 void StartInputTask(void const * argument);
+void StartOutputTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -192,6 +194,10 @@ int main(void)
   /* definition and creation of inputTask */
   osThreadDef(inputTask, StartInputTask, osPriorityIdle, 0, 128);
   inputTaskHandle = osThreadCreate(osThread(inputTask), NULL);
+
+  /* definition and creation of outputTask */
+  osThreadDef(outputTask, StartOutputTask, osPriorityIdle, 0, 128);
+  outputTaskHandle = osThreadCreate(osThread(outputTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -810,6 +816,24 @@ void StartInputTask(void const * argument)
     delay(1);
   }
   /* USER CODE END StartInputTask */
+}
+
+/* USER CODE BEGIN Header_StartOutputTask */
+/**
+* @brief Function implementing the outputTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartOutputTask */
+void StartOutputTask(void const * argument)
+{
+  /* USER CODE BEGIN StartOutputTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END StartOutputTask */
 }
 
 /**
