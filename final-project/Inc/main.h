@@ -176,29 +176,11 @@ void led_red_off();
 /*
  * Automatically calculates a safe refresh
  * rate based on the resolution of the field
- * to pass to TIM4.
  *
  * UART baudrate = 115200 bits/sec
  * TIM4 freq = 100 kHz
- *
- * We model the UART refreshing process like a
- * square-wave duty cycle signal.
- *    When the signal is high, transmit data via. UART
- *    When the signal is low, wait
- *
- * The time UART will take to transmit a game frame is
- * calculated based on the buffer size of the game and
- * the baudrate of the UART connection. This is the
- * duration of the 'high' portion of the square-wave.
- *
- * We divide this duration by the duty cycle to add
- * the 'low' portion of the square wave.
- *
- * Multiply by the frequency of TIM4 to get the counter
- * value used in the TIM4 interrupt.
  */
-#define DUTY_CYCLE 0.33
-#define REFRESH_RATE (100000 * (((2 * MAX_BUF_SIZE * 11) / 115200.0) / DUTY_CYCLE))
+#define REFRESH_RATE (14400 / (MAX_BUF_SIZE * 2 * 10))
 // game characters
 #define USER '^'
 #define ENEMY '@'
