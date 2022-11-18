@@ -14,8 +14,6 @@ uint8_t _clearBuf[MAX_BUF_SIZE];
 void initOutput(UART_HandleTypeDef *huart)
 {
   _huart = huart;
-  _n = (uint16_t) SCR_WIDTH;
-  _n *= (uint16_t) SCR_HEIGHT;
 
   // clear buffer
   memset(_buf, BORDER, _n);
