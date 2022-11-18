@@ -85,7 +85,7 @@ void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles
 
 void transmitBuffer(uint8_t *buf, uint16_t n)
 {
-  hal_exec(HAL_UART_Transmit(_huart, buf, n, UART_TIMEOUT));
+  hal_exec(HAL_UART_Transmit_DMA(_huart, buf, n));
 }
 
 void resetCursor()
