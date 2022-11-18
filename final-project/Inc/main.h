@@ -178,7 +178,6 @@ void led_red_off();
  * rate based on the resolution of the field
  *
  * UART baudrate = 115200 bits/sec
- * TIM4 freq = 100 kHz
  *
  * Make it wait 3x as long as necessary to let us see
  * the frame more clearly
