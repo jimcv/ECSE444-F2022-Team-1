@@ -11,10 +11,9 @@ void initOutput(UART_HandleTypeDef *huart);
 
 /**
  * Update the output buffer.
- * @param _user The user object.
- * @param _enemies The list of enemies.
+ * @param gameObjects the array of objects.
  */
-void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles[NUM_PROJECTILES]);
+void updateBuffer(game_objects *gameObjects);
 
 /**
  * Send the current buffer over UART.

@@ -38,8 +38,13 @@ void initOutput(UART_HandleTypeDef *huart)
   memset(_buf, '\b', _n);
 }
 
-void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles[NUM_PROJECTILES])
+void updateBuffer(game_objects *gameObjects)
 {
+  lookupAndLockSharedVariable(gameObjects, OS_TIMEOUT);
+  user user = gameObjects->user;
+  enemy *enemies = gameObjects->enemies;
+  projectile *projectiles = gameObjects->projectiles;
+
   // clear objects from buffer
   for (int i = _n; i < 2 * _n; i++) {
     if (_buf[i] != BACKGROUND && _buf[i] != BORDER && _buf[i] != '\r' && _buf[i] != '\n') {
@@ -48,8 +53,8 @@ void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles
   }
 
   // draw user
-  int32_t x = *&user->rb.x + 1; // add one to offset from border
-  int32_t y = *&user->rb.y + 1; // add one to offset from border
+  int32_t x = user.x + 1; // add one to offset from border
+  int32_t y = user.y + 1; // add one to offset from border
   _buf[x + y * SCR_WIDTH + _n] = USER;
 
   // draw enemies
@@ -57,8 +62,8 @@ void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles
   {
     if (enemies[i].enabled)
     {
-      x = enemies[i].rb.x + 1;
-      y = enemies[i].rb.y + 1;
+      x = enemies[i].x + 1;
+      y = enemies[i].y + 1;
       _buf[x + y * SCR_WIDTH + _n] = ENEMY;
     }
   }
@@ -68,8 +73,8 @@ void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles
   {
     if (projectiles[i].enabled)
     {
-      x = projectiles[i].rb.x + 1;
-      y = projectiles[i].rb.y + 1;
+      x = projectiles[i].x + 1;
+      y = projectiles[i].y + 1;
       _buf[x + y * SCR_WIDTH + _n] = PROJECTILE;
     }
   }
