@@ -50,20 +50,25 @@ OSPI_HandleTypeDef hospi1;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
+TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart1;
+DMA_HandleTypeDef hdma_usart1_tx;
 
 osThreadId engineTaskHandle;
 osThreadId inputTaskHandle;
 osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
 // running mode
-const MODE mode = MODE_RTOS;
+const MODE mode = MODE_TEST_OUTPUT;
 
 // game objects
 user _user;
 enemy _enemies[NUM_ENEMIES];
 projectile _projectiles[NUM_PROJECTILES];
+
+int counter = 0;
+bool drawFrame = true;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -76,6 +81,7 @@ static void MX_DAC1_Init(void);
 static void MX_OCTOSPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_TIM4_Init(void);
 void StartEngineTask(void const * argument);
 void StartInputTask(void const * argument);
 void StartOutputTask(void const * argument);
@@ -124,6 +130,7 @@ int main(void)
   MX_OCTOSPI1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
   // initialize sensors, delay prevents button bounce to affect sensor calibration
@@ -133,6 +140,7 @@ int main(void)
   // start timer interrupts
   HAL_TIM_Base_Start_IT(&htim2);
   HAL_TIM_Base_Start_IT(&htim3);
+  HAL_TIM_Base_Start_IT(&htim4);
 
   // turn red LED off
   led_red_off();
@@ -151,7 +159,6 @@ int main(void)
   else if (IS_MODE_OUTPUT())
   {
     initOutput(&huart1);
-    StartOutputTask(NULL);
   }
 
   // start RTOS
@@ -492,6 +499,51 @@ static void MX_TIM3_Init(void)
 }
 
 /**
+  * @brief TIM4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM4_Init(void)
+{
+
+  /* USER CODE BEGIN TIM4_Init 0 */
+
+  /* USER CODE END TIM4_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM4_Init 1 */
+
+  /* USER CODE END TIM4_Init 1 */
+  htim4.Instance = TIM4;
+  htim4.Init.Prescaler = 0;
+  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim4.Init.Period = 1200;
+  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM4_Init 2 */
+
+  /* USER CODE END TIM4_Init 2 */
+
+}
+
+/**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
@@ -553,6 +605,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
 
 }
 
@@ -695,8 +750,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		// TIM3 interrupt: sensor control
 		fusion_update();
 	}
+	if (htim->Instance == TIM4)
+	{
+	  if (counter >= REFRESH_RATE)
+	  {
+	    resetCursor();
+	    drawFrame = true;
+	    counter = 0;
+	  }
+	  else
+	  {
+	    counter++;
+	  }
+	}
 }
-
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (drawFrame) {
+    updateBuffer(&_user, _enemies, _projectiles);
+    drawFrame = false;
+  }
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartEngineTask */
@@ -745,13 +819,10 @@ void StartInputTask(void const * argument)
 void StartOutputTask(void const * argument)
 {
   /* USER CODE BEGIN StartOutputTask */
-
   /* Infinite loop */
   for(;;)
   {
-    delay(1000 / REFRESH_RATE);
-    resetCursor();
-    updateBuffer(&_user, _enemies, _projectiles);
+    delay(1);
   }
   /* USER CODE END StartOutputTask */
 }
