@@ -19,53 +19,29 @@ entity_t playerChar;
 projectile_t projectileList[NUM_PROJECTILES];
 
 /* Transfer functions ---------------------- */
-//transfer Global player to local player struct
-void getGlobalUser(user user_t){
-	//transfer Global player to local player struct
-	playerChar.health = user_t.health;
-	playerChar.posit_x = user_t.rb.x;
-	playerChar.posit_y = user_t.rb.y;
-	playerChar.type = player;
-}
-//transfer Global enemies to local enemies list
-void getGlobalEnemies(enemy* enemies_t){
-	for(int eidx = 0; eidx < NUM_ENEMIES; eidx++){
-		enemyList[eidx].health = enemies_t[eidx].health;
-		enemyList[eidx].posit_x = enemies_t[eidx].rb.x;
-		enemyList[eidx].posit_y = enemies_t[eidx].rb.y;
-		enemyList[eidx].enabled = enemies_t[eidx].enabled;
-		enemyList[eidx].type = enemyUnit;
-	}
-}
-//transfer Global projectiles to local projectile list
-void getGlobalProjectiles(projectile* projectiles_t){
-	for(int pidx = 0; pidx < NUM_PROJECTILES; pidx++){
-		projectileList[pidx].posit_x = projectiles_t[pidx].rb.x;
-		projectileList[pidx].posit_y = projectiles_t[pidx].rb.y;
-		projectileList[pidx].enable = projectiles_t[pidx].enabled;
-	}
-}
 //transfer data back to global variables
 void updateGlobalUser(user* user_t){
-	user_t->health = playerChar.health;
-	user_t->rb.x = playerChar.posit_x;
-	user_t->rb.y = playerChar.posit_y;
+  user_t->enabled = playerChar.health > 0;
+	user_t->x = playerChar.posit_x;
+	user_t->y = playerChar.posit_y;
 }
+
 void updateGlobalEnemies(enemy* enemy_t){
 	for(int eidx = 0; eidx < NUM_ENEMIES; eidx++){
-		enemy_t[eidx].health = enemyList[eidx].health;
-		enemy_t[eidx].rb.x = enemyList[eidx].posit_x;
-		enemy_t[eidx].rb.y = enemyList[eidx].posit_y;
-		enemy_t[eidx].enabled = enemyList[eidx].enabled;
+	  enemy_t[eidx].enabled = enemyList[eidx].enabled;
+		enemy_t[eidx].x = enemyList[eidx].posit_x;
+		enemy_t[eidx].y = enemyList[eidx].posit_y;
 	}
 }
+
 void updateGlobalProjectiles(projectile* projectiles_t){
 	for(int pidx = 0; pidx < NUM_PROJECTILES; pidx++){
 		projectiles_t[pidx].enabled = projectileList[pidx].enable;
-		projectiles_t[pidx].rb.x = projectileList[pidx].posit_x;
-		projectiles_t[pidx].rb.y = projectileList[pidx].posit_y;
+		projectiles_t[pidx].x = projectileList[pidx].posit_x;
+		projectiles_t[pidx].y = projectileList[pidx].posit_y;
 	}
 }
+
 /* Player functions -------------------------- */
 void createPlayer(user* user_t){
 	entity_t thisPlayer;
@@ -80,6 +56,7 @@ void createPlayer(user* user_t){
 entity_t getPlayer(){
 	return playerChar;
 }
+
 /* Enemy functions --------------------------- */
 void createEnemies(enemy* enemy_t) {
 	for (int currEnemies = 0; currEnemies < NUM_ENEMIES; currEnemies++) {
@@ -100,6 +77,7 @@ void createEnemies(enemy* enemy_t) {
 entity_t* getEnemyList(){
 	return enemyList;
 }
+
 /* Projectile functions ------------------------ */
 void createProjectile(int x, int y){
 	projectile_t newProjectile;
@@ -113,6 +91,7 @@ void createProjectile(int x, int y){
 		}
 	}
 }
+
 /* Movement functions -------------------------- */
 void moveRight(entity_t *entity) {
 	if (entity->posit_x >= MAX_X - 1) {
@@ -121,6 +100,7 @@ void moveRight(entity_t *entity) {
 		entity->posit_x++;
 	}
 }
+
 void moveLeft(entity_t *entity) {
 	if (entity->posit_x <= 0) {
 		entity->posit_x = MAX_X - 1;
@@ -129,6 +109,7 @@ void moveLeft(entity_t *entity) {
 	}
 
 }
+
 /* Collision Detection -------------------------- */
 void collisionDetection() {
 	for (int pidx = 0; pidx < NUM_PROJECTILES; pidx++) {
@@ -152,6 +133,7 @@ void collisionDetection() {
 		}
 	}
 }
+
 /* Enemy AI ------------------------------------- */
 void enemyMove() {
 	if (enemyState >= enemySteps) {
@@ -179,6 +161,7 @@ void enemyMove() {
 		break;
 	}*/
 }
+
 /* Enemy reached goal --------------------------- */
 void enemyReached() {
 	for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
@@ -193,6 +176,7 @@ void enemyReached() {
 		}
 	}
 }
+
 /* Move Projectile ------------------------------ */
 void moveProjectiles() {
 	for (int pidx = 0; pidx < NUM_PROJECTILES; pidx++) {
@@ -207,6 +191,7 @@ void moveProjectiles() {
 		}
 	}
 }
+
 /* Move Player ---------------------------------- */
 void movePlayer(float pEulerData){
 	if(pEulerData < -15){
@@ -226,15 +211,10 @@ int gameEnd(){
 	return gameOver;
 }
 
-//Update Game
-int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t, bool fired, float pEulerData) {
-
+/* Update game ------------------------------------- */
+uint32_t updateGame(uint32_t gameObjectSV, game_objects *_gameObjects, bool fired, float pEulerData) {
 	int gameOver = 0;
 
-	//grab global data to local
-	getGlobalEnemies(enemies_t);
-	getGlobalProjectiles(projectiles_t);
-	getGlobalUser(*user_t);
 	//player move
 	movePlayer(pEulerData);
 	//projectile move
@@ -243,18 +223,23 @@ int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t, bool fi
 	if(fired){
 		createProjectile(playerChar.posit_x, playerChar.posit_y - 1);
 	}
+
 	//collision
 	collisionDetection();
+
 	//enemy move
 	enemyMove();
 	//check if enemy has reached bottom
 	enemyReached();
+
 	//gameover check
 	gameOver = gameEnd();
+
 	//update global data
-	updateGlobalEnemies(enemies_t);
-	updateGlobalProjectiles(projectiles_t);
-	updateGlobalUser(user_t);
+	lockSharedVariable(gameObjectSV, OS_TIMEOUT);
+	updateGlobalEnemies(_gameObjects->enemies);
+	updateGlobalProjectiles(_gameObjects->projectiles);
+	updateGlobalUser(&_gameObjects->user);
 
 	return gameOver;
 }

@@ -49,6 +49,7 @@ extern "C" {
 typedef char bool;
 typedef int MODE;
 
+// Model to store an object to display on the screen.
 typedef struct __rigid_body
 {
   // Enabled.
@@ -61,6 +62,19 @@ typedef struct __rigid_body
 typedef rigid_body user;
 typedef rigid_body enemy;
 typedef rigid_body projectile;
+
+// Model to store all game objects.
+#define NUM_ENEMIES 5
+#define NUM_PROJECTILES 10
+typedef struct __game_objects
+{
+  // User.
+  user user;
+  // Enemies.
+  enemy enemies[NUM_ENEMIES];
+  // Projectiles.
+  projectile projectiles[NUM_PROJECTILES];
+} game_objects;
 
 typedef struct __sharedvariable
 {
@@ -151,8 +165,6 @@ void led_red_off();
 // dimensions of the playing field
 #define MAX_X 20
 #define MAX_Y 15
-#define NUM_ENEMIES 5
-#define NUM_PROJECTILES 10
 
 // ================
 // OUTPUT DEFINES

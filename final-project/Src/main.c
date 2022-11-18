@@ -62,14 +62,17 @@ osThreadId outputTaskHandle;
 // running mode
 const MODE mode = MODE_RTOS;
 
+// button flags
+uint32_t _buttonWentDownSV;
+bool _buttonWentDown = false;
+
 // game objects
-user _user;
-enemy _enemies[NUM_ENEMIES];
-projectile _projectiles[NUM_PROJECTILES];
-// Game flags
-bool PROJECTILE_FIRE = false;
+uint32_t _gameObjectsSV;
+game_objects _gameObjects;
+
 // UART flags
-bool UART_DMA_READY = true;
+uint32_t _uartReadySV;
+bool _uartReady = true;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -166,10 +169,6 @@ int main(void)
     initEngine();
     initInput();
     initOutput(&huart1);
-
-  // initialize game data
-  createPlayer(&_user);
-  createEnemies(_enemies);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -178,6 +177,9 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
+  _buttonWentDownSV = createSharedVariable(1, &_buttonWentDown);
+  _gameObjectsSV = createSharedVariable(1, &_gameObjects);
+  _uartReadySV = createSharedVariable(1, &_uartReady);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -621,7 +623,9 @@ static void MX_GPIO_Init(void)
 // initialize game engine
 void initEngine()
 {
-
+  // initialize game data
+  createPlayer(&_gameObjects.user);
+  createEnemies(_gameObjects.enemies);
 }
 
 // initialize input configuration
@@ -698,7 +702,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	if (GPIO_Pin == USER_BUTTON_Pin && HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == 1)
 	{
 		// do something when USER_BUTTON is pressed
-		PROJECTILE_FIRE = true;
+	  if (HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_RESET)
+	  {
+	    // button went down
+	    lockSharedVariable(_buttonWentDownSV, IRQ_TIMEOUT);
+	    _buttonWentDown = true;
+	    releaseSharedVariable(_buttonWentDownSV);
+	  }
 	}
 }
 
@@ -715,7 +725,9 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
   if (huart->Instance == USART1) {
     // indicate that DMA transmission has completed
-    UART_DMA_READY = true;
+    lockSharedVariable(_uartReadySV, IRQ_TIMEOUT);
+    _uartReady = true;
+    releaseSharedVariable(_uartReadySV);
   }
 }
 /* USER CODE END 4 */
@@ -730,14 +742,21 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 void StartEngineTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
+  bool buttonWentDown = false;
   /* Infinite loop */
   for(;;)
   {
-	delay(500 / REFRESH_RATE);
-	float pEulerData[3];
-	fusion_get_euler(pEulerData, 0);
-	updateGame(&_user, _enemies, _projectiles, PROJECTILE_FIRE, pEulerData[1]);
-	PROJECTILE_FIRE = false;
+    delay(500 / REFRESH_RATE);
+
+    // determine if button pressed
+    lockSharedVariable(_buttonWentDownSV, OS_TIMEOUT);
+    buttonWentDown = _buttonWentDown;
+    _buttonWentDown = false;
+    releaseSharedVariable(_buttonWentDownSV);
+
+    float pEulerData[3];
+    fusion_get_euler(pEulerData, 0);
+    updateGame(_gameObjectsSV, &_gameObjects, buttonWentDown, pEulerData[1]);
   }
   /* USER CODE END 5 */
 }
@@ -770,13 +789,24 @@ void StartInputTask(void const * argument)
 void StartOutputTask(void const * argument)
 {
   /* USER CODE BEGIN StartOutputTask */
+  bool uartReady = false;
   /* Infinite loop */
   for(;;)
   {
+    // delay
     delay(1000 / REFRESH_RATE);
-    if (UART_DMA_READY) {
-      updateBuffer(&_user, _enemies, _projectiles);
-      UART_DMA_READY = false;
+
+    // determine if UART is ready
+    lockSharedVariable(_uartReadySV, OS_TIMEOUT);
+    uartReady = _uartReady;
+    _uartReady = false;
+    releaseSharedVariable(_uartReadySV);
+
+    // update buffer
+    if (uartReady) {
+      lockSharedVariable(_gameObjectsSV, OS_TIMEOUT);
+      updateBuffer(&_gameObjects);
+      releaseSharedVariable(_gameObjectsSV);
     }
   }
   /* USER CODE END StartOutputTask */
