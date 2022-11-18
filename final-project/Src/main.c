@@ -59,7 +59,7 @@ osThreadId engineTaskHandle;
 osThreadId inputTaskHandle;
 /* USER CODE BEGIN PV */
 // running mode
-const MODE mode = MODE_TEST_OUTPUT;
+const MODE mode = MODE_RTOS;
 
 // game objects
 user _user;
