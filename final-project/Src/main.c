@@ -59,7 +59,7 @@ osThreadId inputTaskHandle;
 osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
 // running mode
-const MODE mode = MODE_TEST_OUTPUT;
+const MODE mode = MODE_RTOS;
 
 // game objects
 user _user;
@@ -136,9 +136,8 @@ int main(void)
 
   // start timer interrupts
   HAL_TIM_Base_Start_IT(&htim2);
-  led_red_on();
   HAL_TIM_Base_Start_IT(&htim3);
-  HAL_Delay(1000);
+
   // turn red LED off
   led_red_off();
 
