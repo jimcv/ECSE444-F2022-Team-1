@@ -57,7 +57,6 @@ DMA_HandleTypeDef hdma_usart1_tx;
 
 osThreadId engineTaskHandle;
 osThreadId inputTaskHandle;
-osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
 // running mode
 const MODE mode = MODE_TEST_OUTPUT;
@@ -67,6 +66,7 @@ user _user;
 enemy _enemies[NUM_ENEMIES];
 projectile _projectiles[NUM_PROJECTILES];
 
+// UART variables
 int uart_counter = 0;
 bool drawFrame = true;
 /* USER CODE END PV */
@@ -84,7 +84,6 @@ static void MX_TIM3_Init(void);
 static void MX_TIM4_Init(void);
 void StartEngineTask(void const * argument);
 void StartInputTask(void const * argument);
-void StartOutputTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -193,10 +192,6 @@ int main(void)
   /* definition and creation of inputTask */
   osThreadDef(inputTask, StartInputTask, osPriorityIdle, 0, 128);
   inputTaskHandle = osThreadCreate(osThread(inputTask), NULL);
-
-  /* definition and creation of outputTask */
-  osThreadDef(outputTask, StartOutputTask, osPriorityIdle, 0, 128);
-  outputTaskHandle = osThreadCreate(osThread(outputTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -752,20 +747,28 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 	if (htim->Instance == TIM4)
 	{
+	  // TIM4 interrupt: UART control
+	  // TIM4 set to 100 kHz
+    uart_counter++;
 	  if (uart_counter >= REFRESH_RATE)
 	  {
 	    resetCursor();
 	    drawFrame = true;
 	    uart_counter = 0;
 	  }
-	  else
-	  {
-	    uart_counter++;
-	  }
 	}
 }
+
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
+  /*
+   * DMA Interrupt is used to detect when the clear buffer has
+   * finished transmitting and send the next game frame.
+   *
+   * The drawFrame boolean is used to prevent this callback
+   * from passing the game frame to DMA again once the frame
+   * finishes sending.
+   */
   if (drawFrame) {
     updateBuffer(&_user, _enemies, _projectiles);
     drawFrame = false;
@@ -807,24 +810,6 @@ void StartInputTask(void const * argument)
     delay(1);
   }
   /* USER CODE END StartInputTask */
-}
-
-/* USER CODE BEGIN Header_StartOutputTask */
-/**
-* @brief Function implementing the outputTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartOutputTask */
-void StartOutputTask(void const * argument)
-{
-  /* USER CODE BEGIN StartOutputTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    delay(1);
-  }
-  /* USER CODE END StartOutputTask */
 }
 
 /**
