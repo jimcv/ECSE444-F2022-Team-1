@@ -187,7 +187,7 @@ void led_red_off();
  * Multiply by 2 because we need to transmit '\b'
  * characters to clear the field.
  */
-#define DUTY_CYCLE (1/5.0)
+#define DUTY_CYCLE 0.25
 #define REFRESH_RATE (100000 * (((MAX_BUF_SIZE * 11) / 115200.0) / DUTY_CYCLE))
 // game characters
 #define USER '^'
