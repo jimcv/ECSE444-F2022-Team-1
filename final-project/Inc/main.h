@@ -197,8 +197,8 @@ void led_red_off();
  * Multiply by the frequency of TIM4 to get the counter
  * value used in the TIM4 interrupt.
  */
-#define DUTY_CYCLE 0.25
-#define REFRESH_RATE (100000 * (((MAX_BUF_SIZE * 11) / 115200.0) / DUTY_CYCLE))
+#define DUTY_CYCLE 0.33
+#define REFRESH_RATE (100000 * (((2 * MAX_BUF_SIZE * 11) / 115200.0) / DUTY_CYCLE))
 // game characters
 #define USER '^'
 #define ENEMY '@'
