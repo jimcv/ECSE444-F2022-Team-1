@@ -44,7 +44,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+uint32_t activeSemaphores = 0;
+shared_variable semaphores[NUM_SEMAPHORES] = {{{0, NULL}, NULL, NULL}};
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -86,5 +87,65 @@ void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, Stack
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+uint32_t createSharedVariable(int32_t count, void *var)
+{
+  if (activeSemaphores >= NUM_SEMAPHORES)
+  {
+    return -1;
+  }
 
+  shared_variable *sv = semaphores + activeSemaphores;
+  sv->semaphoreHandle = osSemaphoreCreate(&sv->semaphoreDef, count);
+  sv->var = var;
+
+  return activeSemaphores++;
+}
+
+uint32_t getSharedVariable(void *var)
+{
+  uint32_t i = 0;
+  shared_variable *sv;
+  while (i < NUM_SEMAPHORES)
+  {
+    sv = semaphores + i;
+    if (sv->var && sv->var == var)
+    {
+      break;
+    }
+    ++i;
+  }
+
+  return i;
+}
+
+uint32_t lookupAndLockSharedVariable(void *var, uint32_t timeout)
+{
+  uint32_t i = getSharedVariable(var);
+  if (i >= 0)
+  {
+    lockSharedVariable(i, timeout);
+  }
+  return i;
+}
+
+void *lockSharedVariable(uint32_t idx, uint32_t timeout)
+{
+  osSemaphoreWait(semaphores[idx].semaphoreHandle, timeout);
+  return semaphores[idx].var;
+}
+
+uint32_t lookupAndReleaseSharedVariable(void *var)
+{
+  uint32_t i = getSharedVariable(var);
+  if (i >= 0)
+  {
+    releaseSharedVariable(i);
+  }
+  return i;
+}
+
+void releaseSharedVariable(uint32_t idx)
+{
+  osSemaphoreRelease(semaphores[idx].semaphoreHandle);
+}
 /* USER CODE END Application */

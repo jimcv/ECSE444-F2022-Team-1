@@ -39,6 +39,9 @@ extern "C" {
 #define ARM_MATH_CM4
 #include "arm_math.h"
 
+#include "FreeRTOS.h"
+#include "cmsis_os.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -46,47 +49,25 @@ extern "C" {
 typedef char bool;
 typedef int MODE;
 
-// Model for a rigid body.
 typedef struct __rigid_body
 {
+  // Enabled.
+  bool enabled;
   // x-position.
   int32_t x;
-  // y-coordinate.
+  // y-position.
   int32_t y;
-  // x-velocity.
-  int32_t vel_x;
-  // y-velocity.
-  int32_t vel_y;
 } rigid_body;
+typedef rigid_body user;
+typedef rigid_body enemy;
+typedef rigid_body projectile;
 
-// Model for the user's character.
-typedef struct __user
+typedef struct __sharedvariable
 {
-  // Health.
-  int32_t health;
-  // Rigid body for the user.
-  rigid_body rb;
-} user;
-
-// Model for an enemy.
-typedef struct __enemy
-{
-  // Enabled.
-  bool enabled;
-  // Health.
-  int32_t health;
-  // Rigid body for the enemy.
-  rigid_body rb;
-} enemy;
-
-// Model for a projectile.
-typedef struct __projectile
-{
-  // Enabled.
-  bool enabled;
-  // Rigid body for the projectile.
-  rigid_body rb;
-} projectile;
+  osSemaphoreDef_t semaphoreDef;
+  osSemaphoreId semaphoreHandle;
+  void *var;
+} shared_variable;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -111,6 +92,14 @@ extern const MODE mode;
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
+uint32_t createSharedVariable(int32_t count, void *var);
+uint32_t getSharedVariable(void *var);
+
+uint32_t lookupAndLockSharedVariable(void *var, uint32_t timeout);
+void *lockSharedVariable(uint32_t idx, uint32_t timeout);
+uint32_t lookupAndReleaseSharedVariable(void *var);
+void releaseSharedVariable(uint32_t idx);
+
 void initEngine();
 void initInput();
 
@@ -150,6 +139,7 @@ void led_red_off();
 // ================
 #define OS_TIMEOUT 30000
 #define IRQ_TIMEOUT 5
+#define NUM_SEMAPHORES 32
 
 // ================
 // INPUT DEFINES
