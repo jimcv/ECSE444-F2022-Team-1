@@ -56,7 +56,6 @@ UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
 
 osThreadId engineTaskHandle;
-osThreadId inputTaskHandle;
 osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
 // running mode
@@ -86,7 +85,6 @@ static void MX_OCTOSPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 void StartEngineTask(void const * argument);
-void StartInputTask(void const * argument);
 void StartOutputTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -155,7 +153,6 @@ int main(void)
   else if (IS_MODE_INPUT())
   {
     initInput();
-    StartInputTask(NULL);
   }
   else if (IS_MODE_OUTPUT())
   {
@@ -194,10 +191,6 @@ int main(void)
   /* definition and creation of engineTask */
   osThreadDef(engineTask, StartEngineTask, osPriorityNormal, 0, 128);
   engineTaskHandle = osThreadCreate(osThread(engineTask), NULL);
-
-  /* definition and creation of inputTask */
-  osThreadDef(inputTask, StartInputTask, osPriorityIdle, 0, 128);
-  inputTaskHandle = osThreadCreate(osThread(inputTask), NULL);
 
   /* definition and creation of outputTask */
   osThreadDef(outputTask, StartOutputTask, osPriorityIdle, 0, 128);
@@ -759,24 +752,6 @@ void StartEngineTask(void const * argument)
     updateGame(_gameObjectsSV, &_gameObjects, buttonWentDown, pEulerData[1]);
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_StartInputTask */
-/**
-* @brief Function implementing the inputTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartInputTask */
-void StartInputTask(void const * argument)
-{
-  /* USER CODE BEGIN StartInputTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    delay(1);
-  }
-  /* USER CODE END StartInputTask */
 }
 
 /* USER CODE BEGIN Header_StartOutputTask */
