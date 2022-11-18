@@ -67,7 +67,7 @@ user _user;
 enemy _enemies[NUM_ENEMIES];
 projectile _projectiles[NUM_PROJECTILES];
 
-int counter = 0;
+int uart_counter = 0;
 bool drawFrame = true;
 /* USER CODE END PV */
 
@@ -752,15 +752,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 	if (htim->Instance == TIM4)
 	{
-	  if (counter >= REFRESH_RATE)
+	  if (uart_counter >= REFRESH_RATE)
 	  {
 	    resetCursor();
 	    drawFrame = true;
-	    counter = 0;
+	    uart_counter = 0;
 	  }
 	  else
 	  {
-	    counter++;
+	    uart_counter++;
 	  }
 	}
 }
