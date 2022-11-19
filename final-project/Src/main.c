@@ -133,9 +133,28 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
-  // initialize sensors, delay prevents button bounce to affect sensor calibration
+  // initialization
+  if (IS_MODE_ENGINE())
+  {
+    initEngine();
+  }
+  else if (IS_MODE_INPUT())
+  {
+    initInput();
+  }
+  else if (IS_MODE_OUTPUT())
+  {
+    initOutput(&huart1);
+  }
+  else if (IS_MODE_RTOS())
+  {
+    initEngine();
+    initInput();
+    initOutput(&huart1);
+  }
+
+  // delay to prevent button bounce that affects sensor calibration
   HAL_Delay(500);
-  fusion_init(0);
 
   // start timer interrupts
   HAL_TIM_Base_Start_IT(&htim2);
@@ -147,25 +166,24 @@ int main(void)
   // start testing mode
   if (IS_MODE_ENGINE())
   {
-    initEngine();
     StartEngineTask(NULL);
   }
   else if (IS_MODE_INPUT())
   {
-    initInput();
+    for (;;)
+    {
+      float vals[3];
+      fusion_get_euler(vals, 0);
+    }
   }
   else if (IS_MODE_OUTPUT())
   {
-    initOutput(&huart1);
     StartOutputTask(NULL);
   }
 
   // start RTOS
   if (IS_MODE_RTOS())
   {
-    initEngine();
-    initInput();
-    initOutput(&huart1);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -624,13 +642,8 @@ void initEngine()
 // initialize input configuration
 void initInput()
 {
-  // initialize I2C peripherals
-  //if (BSP_MAGNETO_Init() != MAGNETO_OK ||
-  //    BSP_GYRO_Init() != GYRO_OK)
-  if (false)
-  {
-    Error_Handler();
-  }
+  fusion_init(0);
+  fusion_calibrate_gyro();
 }
 
 // delay
