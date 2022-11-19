@@ -65,9 +65,6 @@ const MODE mode = MODE_RTOS;
 user _user;
 enemy _enemies[NUM_ENEMIES];
 projectile _projectiles[NUM_PROJECTILES];
-
-// UART variables
-bool drawFrame = true;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -704,21 +701,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 }
 
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-  /*
-   * DMA Interrupt is used to detect when the clear buffer has
-   * finished transmitting and send the next game frame.
-   *
-   * The drawFrame boolean is used to prevent this callback
-   * from passing the game frame to DMA again once the frame
-   * finishes sending.
-   */
-  if (drawFrame) {
-    updateBuffer(&_user, _enemies, _projectiles);
-    drawFrame = false;
-  }
-}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartEngineTask */
@@ -771,8 +753,7 @@ void StartOutputTask(void const * argument)
   for(;;)
   {
     delay(1000 / REFRESH_RATE);
-    resetCursor();
-    drawFrame = true;
+    updateBuffer(&_user, _enemies, _projectiles);
   }
   /* USER CODE END StartOutputTask */
 }
