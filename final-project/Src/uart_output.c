@@ -9,7 +9,6 @@ UART_HandleTypeDef *_huart;
 // transmission buffer
 uint16_t _n = MAX_BUF_SIZE;
 uint8_t _buf[2 * MAX_BUF_SIZE];
-uint8_t _clearBuf[MAX_BUF_SIZE];
 
 void initOutput(UART_HandleTypeDef *huart)
 {
@@ -37,11 +36,6 @@ void initOutput(UART_HandleTypeDef *huart)
 
   // set clear buffer
   memset(_buf, '\b', _n);
-  memset(_clearBuf, '\b', _n);
-
-  ITM_Port32(31) = SCR_WIDTH;
-  ITM_Port32(31) = SCR_HEIGHT;
-  ITM_Port32(31) = _n;
 }
 
 void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles[NUM_PROJECTILES])
@@ -87,7 +81,3 @@ void transmitBuffer(uint8_t *buf, uint16_t n)
   hal_exec(HAL_UART_Transmit_DMA(_huart, buf, n));
 }
 
-void resetCursor()
-{
-  transmitBuffer(_clearBuf, _n);
-}

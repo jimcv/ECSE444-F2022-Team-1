@@ -23,9 +23,4 @@ void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles
  */
 void transmitBuffer(uint8_t *buf, uint16_t n);
 
-/**
- * Reset the cursor in the terminal.
- */
-void resetCursor();
-
 #endif // __UART_OUTPUT_H
