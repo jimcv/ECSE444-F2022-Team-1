@@ -131,11 +131,20 @@ void createProjectile(int x, int y){
 	}
 }
 /* Movement functions -------------------------- */
-void moveRight(entity_t* entity){
-	entity->posit_x++;
+void moveRight(entity_t *entity) {
+	if (entity->posit_x >= MAX_X - 1) {
+		entity->posit_x = 0;
+	} else {
+		entity->posit_x++;
+	}
 }
-void moveLeft(entity_t* entity){
-	entity->posit_x--;
+void moveLeft(entity_t *entity) {
+	if (entity->posit_x <= 0) {
+		entity->posit_x = MAX_X - 1;
+	} else {
+		entity->posit_x--;
+	}
+
 }
 /* Collision Detection -------------------------- */
 void collisionDetection() {
@@ -229,18 +238,26 @@ int gameEnd(){
 //Update Game
 int update(user* user_t,enemy* enemies_t, projectile* projectiles_t) {
 	int gameOver = 0;
+	//grab global data to local
 	getGlobalEnemies(enemies_t);
 	getGlobalProjectiles(projectiles_t);
 	getGlobalUser(*user_t);
 	//player move
 
-	//enemy move
-	enemyMove();
 	//projectile move
 	moveProjectiles();
 	//collision
 	collisionDetection();
+	//enemy move
+	enemyMove();
+	//check if enemy has reached bottom
+	enemyReached();
 	//gameover check
 	gameOver = gameEnd();
+	//update global data
+	updateGlobalEnemies(enemies_t);
+	updateGlobalProjectiles(projectiles_t);
+	updateGlobalUser(user_t);
+
 	return gameOver;
 }
