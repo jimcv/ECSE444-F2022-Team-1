@@ -172,22 +172,17 @@ void led_red_off();
 #define MAX_BUF_SIZE ((MAX_X + 4) * (MAX_Y + 2))
 #define SCR_WIDTH (MAX_X + 4)
 #define SCR_HEIGHT (MAX_Y + 2)
-// refresh rate of the screen (in Hz)
+// refresh rate of the screen
 /*
  * Automatically calculates a safe refresh
- * rate based on the resolution of the field.
+ * rate based on the resolution of the field
  *
- * The baudrate of the UART terminal is set to
- * 115200 bits/second -> 14400 bytes/second.
+ * UART baudrate = 115200 bits/sec
  *
- * Divide the baudrate by twice the size of the
- * field buffer to get the number of times per
- * second the field can be rendered.
- *
- * Multiply by 2 because we need to transmit '\b'
- * characters to clear the field.
+ * Make it wait 3x as long as necessary to let us see
+ * the frame more clearly
  */
-#define REFRESH_RATE (14400 / (2 * MAX_BUF_SIZE))
+#define REFRESH_RATE (115200 / (MAX_BUF_SIZE * 6 * 10))
 // game characters
 #define USER '^'
 #define ENEMY '@'
