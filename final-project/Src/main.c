@@ -65,6 +65,9 @@ const MODE mode = MODE_RTOS;
 user _user;
 enemy _enemies[NUM_ENEMIES];
 projectile _projectiles[NUM_PROJECTILES];
+
+// UART flags
+bool UART_DMA_READY = true;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -701,6 +704,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 }
 
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART1) {
+    // indicate that DMA transmission has completed
+    UART_DMA_READY = true;
+  }
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartEngineTask */
@@ -753,7 +763,10 @@ void StartOutputTask(void const * argument)
   for(;;)
   {
     delay(1000 / REFRESH_RATE);
-    updateBuffer(&_user, _enemies, _projectiles);
+    if (UART_DMA_READY) {
+      updateBuffer(&_user, _enemies, _projectiles);
+      UART_DMA_READY = false;
+    }
   }
   /* USER CODE END StartOutputTask */
 }
