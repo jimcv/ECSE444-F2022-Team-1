@@ -8,6 +8,12 @@
 #ifndef GAME_ENGINE_H_
 #define GAME_ENGINE_H_
 
-#include "game_engine.c"
+#include "main.h"
+
+//functions
+int update(user* user_t,enemy* enemies_t, projectile* projectiles_t);
+void createPlayer();
+void createEnemies();
+void createProjectile(int x, int y);
 
 #endif /* GAME_ENGINE_H_ */

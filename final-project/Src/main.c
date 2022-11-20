@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "uart_output.h"
 #include "sensor_fusion.h"
+#include "game_engine.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
