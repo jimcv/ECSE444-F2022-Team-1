@@ -11,9 +11,9 @@
 #include "main.h"
 
 //functions
-int update(user* user_t,enemy* enemies_t, projectile* projectiles_t);
-void createPlayer();
-void createEnemies();
-void createProjectile(int x, int y);
+int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t);
+void createPlayer(user* user_t);
+void createEnemies(enemy* enemy_t);
+void createProjectile(int x, int y,projectile* projectiles_t);
 
 #endif /* GAME_ENGINE_H_ */
