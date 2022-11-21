@@ -232,6 +232,16 @@ void moveProjectiles() {
 		}
 	}
 }
+/* Move Player ---------------------------------- */
+void movePlayer(float pEulerData){
+	if(pEulerData < -15){
+		moveLeft(&playerChar);
+	}
+	else if (pEulerData > 15) {
+		moveRight(&playerChar);
+	}
+}
+
 /* End game ------------------------------------- */
 int gameEnd(){
 	int gameOver = 0;
@@ -242,7 +252,7 @@ int gameEnd(){
 }
 
 //Update Game
-int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t, bool fired) {
+int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t, bool fired, float pEulerData) {
 
 	int gameOver = 0;
 
@@ -251,7 +261,7 @@ int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t, bool fi
 	getGlobalProjectiles(projectiles_t);
 	getGlobalUser(*user_t);
 	//player move
-
+	movePlayer(pEulerData);
 	//projectile move
 	moveProjectiles();
 	//fire projectile

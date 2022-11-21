@@ -734,7 +734,9 @@ void StartEngineTask(void const * argument)
   for(;;)
   {
 	delay(500 / REFRESH_RATE);
-	updateGame(&_user, _enemies, _projectiles, PROJECTILE_FIRE);
+	float pEulerData[3];
+	fusion_get_euler(pEulerData, 0);
+	updateGame(&_user, _enemies, _projectiles, PROJECTILE_FIRE, pEulerData[1]);
 	PROJECTILE_FIRE = false;
   }
   /* USER CODE END 5 */
