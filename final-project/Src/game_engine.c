@@ -89,29 +89,33 @@ void updateGlobalProjectiles(projectile* projectiles_t){
 	}
 }
 /* Player functions -------------------------- */
-void createPlayer(){
+void createPlayer(user* user_t){
 	entity_t thisPlayer;
 	thisPlayer.health = MAX_PLAYERHP;
 	thisPlayer.posit_x = MAX_X/2;
 	thisPlayer.posit_y = MAX_Y - 1;
 	thisPlayer.type = player;
 	playerChar = thisPlayer;
+	updateGlobalUser(user_t);
 }
 
 entity_t getPlayer(){
 	return playerChar;
 }
 /* Enemy functions --------------------------- */
-void createEnemies() {
+void createEnemies(enemy* enemy_t) {
 	for (int currEnemies = 0; currEnemies < NUM_ENEMIES; currEnemies++) {
 		entity_t thisEnemy;
+		int step = MAX_X/NUM_ENEMIES;
+		int start = step / 2;
 		thisEnemy.health = MAX_ENEMYHP;
 		thisEnemy.type = enemyUnit;
 		/*enemy starting position is set on row 10 side by side assumming they are only one ASCII character currently*/
-		thisEnemy.posit_x = 19 + currEnemies;
-		thisEnemy.posit_y = 10;
+		thisEnemy.posit_x = start + (currEnemies * step);
+		thisEnemy.posit_y = 1;
 		enemyList[currEnemies] = thisEnemy;
 	}
+	updateGlobalEnemies(enemy_t);
 }
 
 entity_t* getEnemyList(){
@@ -180,7 +184,7 @@ void enemyMove() {
 		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
 			if (enemyList[eidx].health > 0) {
 				if (enemyList[eidx].posit_y < MAX_Y - 1) {
-					enemyList[eidx].posit_y--;
+					enemyList[eidx].posit_y++;
 				}
 			}
 		}
@@ -208,7 +212,9 @@ void enemyReached() {
 			enemyList[eidx].health = 0;
 			enemyList[eidx].posit_x = 0;
 			enemyList[eidx].posit_y = 0;
-			playerChar.health--;
+			if(playerChar.health > 0){
+				playerChar.health--;
+			}
 		}
 	}
 }
@@ -236,8 +242,22 @@ int gameEnd(){
 }
 
 //Update Game
-int update(user* user_t,enemy* enemies_t, projectile* projectiles_t) {
+int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t) {
+
 	int gameOver = 0;
+	/*for(int ite = 0; ite < 9; ite++){
+		moveRight(&playerChar);
+	}
+	for (int idx = 0; idx < 4 * 13; idx++) {
+		enemyMove();
+	}
+	enemyReached();
+	createProjectile(2, 10);
+	collisionDetection();
+	updateGlobalUser(user_t);
+	updateGlobalEnemies(enemies_t);
+	updateGlobalProjectiles(projectiles_t);*/
+
 	//grab global data to local
 	getGlobalEnemies(enemies_t);
 	getGlobalProjectiles(projectiles_t);

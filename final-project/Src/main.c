@@ -165,6 +165,10 @@ int main(void)
     initEngine();
     initInput();
     initOutput(&huart1);
+
+  // initialize game data
+  createPlayer(&_user);
+  createEnemies(_enemies);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
