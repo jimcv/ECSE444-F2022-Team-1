@@ -227,7 +227,7 @@ void moveProjectiles() {
 				projectileList[pidx].posit_y = 0;
 				projectileList[pidx].enable = 0;
 			} else {
-					projectileList[pidx].posit_y++;
+					projectileList[pidx].posit_y--;
 			}
 		}
 	}
@@ -242,21 +242,9 @@ int gameEnd(){
 }
 
 //Update Game
-int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t) {
+int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t, bool fired) {
 
 	int gameOver = 0;
-	/*for(int ite = 0; ite < 9; ite++){
-		moveRight(&playerChar);
-	}
-	for (int idx = 0; idx < 4 * 13; idx++) {
-		enemyMove();
-	}
-	enemyReached();
-	createProjectile(2, 10);
-	collisionDetection();
-	updateGlobalUser(user_t);
-	updateGlobalEnemies(enemies_t);
-	updateGlobalProjectiles(projectiles_t);*/
 
 	//grab global data to local
 	getGlobalEnemies(enemies_t);
@@ -266,6 +254,10 @@ int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t) {
 
 	//projectile move
 	moveProjectiles();
+	//fire projectile
+	if(fired){
+		createProjectile(playerChar.posit_x, playerChar.posit_y - 1);
+	}
 	//collision
 	collisionDetection();
 	//enemy move

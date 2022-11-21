@@ -11,7 +11,7 @@
 #include "main.h"
 
 //functions
-int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t);
+int updateGame(user* user_t,enemy* enemies_t, projectile* projectiles_t, bool fired);
 void createPlayer(user* user_t);
 void createEnemies(enemy* enemy_t);
 void createProjectile(int x, int y,projectile* projectiles_t);
