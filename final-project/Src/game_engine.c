@@ -52,6 +52,10 @@ void updateGlobalGameObjects(void *gameObjectsPtr)
 }
 
 /* Player functions -------------------------- */
+/**
+ * Initialize the player character.
+ * @param user_t the global user structure to write to.
+ */
 void createPlayer(user* user_t){
 	entity_t thisPlayer;
 	thisPlayer.health = MAX_PLAYERHP;
@@ -67,7 +71,11 @@ entity_t getPlayer(){
 }
 
 /* Enemy functions --------------------------- */
-void createEnemies(enemy* enemy_t) {
+/**
+ * Initialize the enemy array.
+ * @param enemy_t the global enemy array to write to.
+ */
+void createEnemies(enemy enemy_t[NUM_ENEMIES]) {
 	for (int currEnemies = 0; currEnemies < NUM_ENEMIES; currEnemies++) {
 		entity_t thisEnemy;
 		int step = MAX_X/NUM_ENEMIES;
@@ -88,6 +96,11 @@ entity_t* getEnemyList(){
 }
 
 /* Projectile functions ------------------------ */
+/**
+ * Create a projectile entity.
+ * @param x the x-coordinate of the projectile.
+ * @param y the y-coordinate of the projectile.
+ */
 void createProjectile(int x, int y){
 	projectile_t newProjectile;
 	newProjectile.posit_x = x;
@@ -220,7 +233,12 @@ int gameEnd(){
 	return gameOver;
 }
 
-/* Update game ------------------------------------- */
+/**
+ * Update the game structures after an iteration.
+ * @param gameObjectsSV shared variable identifier for the game objects.
+ * @param fired whether the button was just pressed.
+ * @param pEulerData the rotation of the board in degrees from the y-axis.
+ */
 uint32_t updateGame(uint32_t gameObjectsSV, bool fired, float pEulerData) {
 	int gameOver = 0;
 

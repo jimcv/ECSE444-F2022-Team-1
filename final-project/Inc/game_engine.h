@@ -33,10 +33,31 @@ typedef struct gameProjectile {
 	char enable;
 }projectile_t;
 
-//functions
+/**
+ * Update the game structures after an iteration.
+ * @param gameObjectsSV shared variable identifier for the game objects.
+ * @param fired whether the button was just pressed.
+ * @param pEulerData the rotation of the board in degrees from the y-axis.
+ */
 uint32_t updateGame(uint32_t gameObjectsSV, bool fired, float pEulerData);
+
+/**
+ * Initialize the player character.
+ * @param user_t the global user structure to write to.
+ */
 void createPlayer(user* user_t);
-void createEnemies(enemy* enemy_t);
+
+/**
+ * Initialize the enemy array.
+ * @param enemy_t the global enemy array to write to.
+ */
+void createEnemies(enemy enemy_t[NUM_ENEMIES]);
+
+/**
+ * Create a projectile entity.
+ * @param x the x-coordinate of the projectile.
+ * @param y the y-coordinate of the projectile.
+ */
 void createProjectile(int x, int y);
 
 #endif /* GAME_ENGINE_H_ */
