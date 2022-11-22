@@ -22,24 +22,33 @@ projectile_t projectileList[NUM_PROJECTILES];
 //transfer data back to global variables
 void updateGlobalUser(user* user_t){
   user_t->enabled = playerChar.health > 0;
-	user_t->x = playerChar.posit_x;
-	user_t->y = playerChar.posit_y;
+  user_t->x = playerChar.posit_x;
+  user_t->y = playerChar.posit_y;
 }
 
 void updateGlobalEnemies(enemy* enemy_t){
-	for(int eidx = 0; eidx < NUM_ENEMIES; eidx++){
-	  enemy_t[eidx].enabled = enemyList[eidx].enabled;
-		enemy_t[eidx].x = enemyList[eidx].posit_x;
-		enemy_t[eidx].y = enemyList[eidx].posit_y;
-	}
+  for(int eidx = 0; eidx < NUM_ENEMIES; eidx++){
+    enemy_t[eidx].enabled = enemyList[eidx].enabled;
+    enemy_t[eidx].x = enemyList[eidx].posit_x;
+    enemy_t[eidx].y = enemyList[eidx].posit_y;
+  }
 }
 
 void updateGlobalProjectiles(projectile* projectiles_t){
-	for(int pidx = 0; pidx < NUM_PROJECTILES; pidx++){
-		projectiles_t[pidx].enabled = projectileList[pidx].enable;
-		projectiles_t[pidx].x = projectileList[pidx].posit_x;
-		projectiles_t[pidx].y = projectileList[pidx].posit_y;
-	}
+  for(int pidx = 0; pidx < NUM_PROJECTILES; pidx++){
+    projectiles_t[pidx].enabled = projectileList[pidx].enable;
+    projectiles_t[pidx].x = projectileList[pidx].posit_x;
+    projectiles_t[pidx].y = projectileList[pidx].posit_y;
+  }
+}
+
+void updateGlobalGameObjects(void *gameObjectsPtr)
+{
+  game_objects *gameObjects = (game_objects*)gameObjectsPtr;
+
+  updateGlobalUser(&gameObjects->user);
+  updateGlobalEnemies(gameObjects->enemies);
+  updateGlobalProjectiles(gameObjects->projectiles);
 }
 
 /* Player functions -------------------------- */
@@ -212,7 +221,7 @@ int gameEnd(){
 }
 
 /* Update game ------------------------------------- */
-uint32_t updateGame(uint32_t gameObjectSV, game_objects *_gameObjects, bool fired, float pEulerData) {
+uint32_t updateGame(uint32_t gameObjectsSV, bool fired, float pEulerData) {
 	int gameOver = 0;
 
 	//player move
@@ -236,10 +245,7 @@ uint32_t updateGame(uint32_t gameObjectSV, game_objects *_gameObjects, bool fire
 	gameOver = gameEnd();
 
 	//update global data
-	lockSharedVariable(gameObjectSV, OS_TIMEOUT);
-	updateGlobalEnemies(_gameObjects->enemies);
-	updateGlobalProjectiles(_gameObjects->projectiles);
-	updateGlobalUser(&_gameObjects->user);
+	lockSharedVariableAndExecute(gameObjectsSV, OS_TIMEOUT, updateGlobalGameObjects);
 
 	return gameOver;
 }

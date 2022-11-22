@@ -34,7 +34,7 @@ typedef struct gameProjectile {
 }projectile_t;
 
 //functions
-uint32_t updateGame(uint32_t gameObjectSV, game_objects *_gameObjects, bool fired, float pEulerData);
+uint32_t updateGame(uint32_t gameObjectsSV, bool fired, float pEulerData);
 void createPlayer(user* user_t);
 void createEnemies(enemy* enemy_t);
 void createProjectile(int x, int y);

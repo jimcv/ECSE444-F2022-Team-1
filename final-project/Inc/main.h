@@ -49,6 +49,8 @@ extern "C" {
 typedef char bool;
 typedef int MODE;
 
+typedef void (*locked_func)(void*);
+
 // Model to store an object to display on the screen.
 typedef struct __rigid_body
 {
@@ -109,10 +111,10 @@ void Error_Handler(void);
 uint32_t createSharedVariable(int32_t count, void *var);
 uint32_t getSharedVariable(void *var);
 
-uint32_t lookupAndLockSharedVariable(void *var, uint32_t timeout);
 void *lockSharedVariable(uint32_t idx, uint32_t timeout);
-uint32_t lookupAndReleaseSharedVariable(void *var);
 void releaseSharedVariable(uint32_t idx);
+
+void lockSharedVariableAndExecute(uint32_t idx, uint32_t timeout, locked_func func);
 
 void initEngine();
 void initInput();
