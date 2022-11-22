@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "uart_output.h"
 #include "sensor_fusion.h"
+#include "game_engine.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,7 +66,8 @@ const MODE mode = MODE_RTOS;
 user _user;
 enemy _enemies[NUM_ENEMIES];
 projectile _projectiles[NUM_PROJECTILES];
-
+// Game flags
+bool PROJECTILE_FIRE = false;
 // UART flags
 bool UART_DMA_READY = true;
 /* USER CODE END PV */
@@ -164,6 +166,10 @@ int main(void)
     initEngine();
     initInput();
     initOutput(&huart1);
+
+  // initialize game data
+  createPlayer(&_user);
+  createEnemies(_enemies);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -689,9 +695,10 @@ void led_red_off()
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if (GPIO_Pin == USER_BUTTON_Pin)
+	if (GPIO_Pin == USER_BUTTON_Pin && HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == 1)
 	{
 		// do something when USER_BUTTON is pressed
+		PROJECTILE_FIRE = true;
 	}
 }
 
@@ -726,7 +733,11 @@ void StartEngineTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    delay(1);
+	delay(500 / REFRESH_RATE);
+	float pEulerData[3];
+	fusion_get_euler(pEulerData, 0);
+	updateGame(&_user, _enemies, _projectiles, PROJECTILE_FIRE, pEulerData[1]);
+	PROJECTILE_FIRE = false;
   }
   /* USER CODE END 5 */
 }
