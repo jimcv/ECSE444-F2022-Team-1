@@ -118,34 +118,25 @@ uint32_t getSharedVariable(void *var)
   return i;
 }
 
-uint32_t lookupAndLockSharedVariable(void *var, uint32_t timeout)
-{
-  uint32_t i = getSharedVariable(var);
-  if (i >= 0)
-  {
-    lockSharedVariable(i, timeout);
-  }
-  return i;
-}
-
 void *lockSharedVariable(uint32_t idx, uint32_t timeout)
 {
-  osSemaphoreWait(semaphores[idx].semaphoreHandle, timeout);
-  return semaphores[idx].var;
-}
-
-uint32_t lookupAndReleaseSharedVariable(void *var)
-{
-  uint32_t i = getSharedVariable(var);
-  if (i >= 0)
-  {
-    releaseSharedVariable(i);
-  }
-  return i;
+  return idx < NUM_SEMAPHORES && osSemaphoreWait(semaphores[idx].semaphoreHandle, timeout) == osOK
+      ? semaphores[idx].var
+      : NULL;
 }
 
 void releaseSharedVariable(uint32_t idx)
 {
   osSemaphoreRelease(semaphores[idx].semaphoreHandle);
+}
+
+void lockSharedVariableAndExecute(uint32_t idx, uint32_t timeout, locked_func func)
+{
+  void *var = lockSharedVariable(idx, timeout);
+  if (var)
+  {
+    func(var);
+    releaseSharedVariable(idx);
+  }
 }
 /* USER CODE END Application */

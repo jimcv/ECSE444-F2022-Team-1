@@ -38,9 +38,9 @@ void initOutput(UART_HandleTypeDef *huart)
   memset(_buf, '\b', _n);
 }
 
-void updateBuffer(game_objects *gameObjects)
+void writeBuffer(void *gameObjectsPtr)
 {
-  lookupAndLockSharedVariable(gameObjects, OS_TIMEOUT);
+  game_objects *gameObjects = (game_objects*)gameObjectsPtr;
   user user = gameObjects->user;
   enemy *enemies = gameObjects->enemies;
   projectile *projectiles = gameObjects->projectiles;
@@ -78,11 +78,15 @@ void updateBuffer(game_objects *gameObjects)
       _buf[x + y * SCR_WIDTH + _n] = PROJECTILE;
     }
   }
-  transmitBuffer(_buf, 2 * _n);
 }
 
-void transmitBuffer(uint8_t *buf, uint16_t n)
+void updateBuffer(uint32_t gameObjectsSV)
 {
-  hal_exec(HAL_UART_Transmit_DMA(_huart, buf, n));
+  lockSharedVariableAndExecute(gameObjectsSV, OS_TIMEOUT, writeBuffer);
+}
+
+void transmitBuffer()
+{
+  hal_exec(HAL_UART_Transmit_DMA(_huart, _buf, 2 * _n));
 }
 

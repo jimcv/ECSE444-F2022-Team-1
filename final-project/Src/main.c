@@ -705,17 +705,13 @@ void led_red_off()
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if (GPIO_Pin == USER_BUTTON_Pin && HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == 1)
-	{
-		// do something when USER_BUTTON is pressed
-	  if (HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_RESET)
-	  {
-	    // button went down
-	    lockSharedVariable(_buttonWentDownSV, IRQ_TIMEOUT);
-	    _buttonWentDown = true;
-	    releaseSharedVariable(_buttonWentDownSV);
-	  }
-	}
+  if (GPIO_Pin == USER_BUTTON_Pin && HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_SET)
+  {
+    // do something when USER_BUTTON is pressed
+    lockSharedVariable(_buttonWentDownSV, IRQ_TIMEOUT);
+    _buttonWentDown = true;
+    releaseSharedVariable(_buttonWentDownSV);
+  }
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
@@ -753,7 +749,7 @@ void StartEngineTask(void const * argument)
 
     float pEulerData[3];
     fusion_get_euler(pEulerData, 0);
-    updateGame(_gameObjectsSV, &_gameObjects, buttonWentDown, pEulerData[1]);
+    updateGame(_gameObjectsSV, buttonWentDown, pEulerData[1]);
   }
   /* USER CODE END 5 */
 }
@@ -775,6 +771,9 @@ void StartOutputTask(void const * argument)
     // delay
     delay(1000 / REFRESH_RATE);
 
+    // update buffer
+    updateBuffer(_gameObjectsSV);
+
     // determine if UART is ready
     lockSharedVariable(_uartReadySV, OS_TIMEOUT);
     uartReady = _uartReady;
@@ -783,9 +782,7 @@ void StartOutputTask(void const * argument)
 
     // update buffer
     if (uartReady) {
-      lockSharedVariable(_gameObjectsSV, OS_TIMEOUT);
-      updateBuffer(&_gameObjects);
-      releaseSharedVariable(_gameObjectsSV);
+      transmitBuffer();
     }
   }
   /* USER CODE END StartOutputTask */

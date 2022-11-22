@@ -11,15 +11,13 @@ void initOutput(UART_HandleTypeDef *huart);
 
 /**
  * Update the output buffer.
- * @param gameObjects the array of objects.
+ * @param gameObjectsSV the shared variable ID for the game objects.
  */
-void updateBuffer(game_objects *gameObjects);
+void updateBuffer(uint32_t gameObjectsSV);
 
 /**
- * Send the current buffer over UART.
- * @param buf The buffer to transmit.
- * @param n The number of characters to transmit.
+ * Send the output buffer over UART.
  */
-void transmitBuffer(uint8_t *buf, uint16_t n);
+void transmitBuffer();
 
 #endif // __UART_OUTPUT_H
