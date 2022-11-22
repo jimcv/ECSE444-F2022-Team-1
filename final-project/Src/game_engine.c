@@ -8,41 +8,17 @@
 /* Private Includes ------------------------ */
 #include <stdio.h>
 #include <stdlib.h>
-#include "main.h"
-
-/* Private Defines ------------------------- */
-//player
-#define MAX_PLAYERHP 5
+#include "game_engine.h"
 
 /* Private Variable ------------------------ */
-enum entity { player, enemyUnit };  //0 is player and 1 is enemy
 //enemy
-int MAX_ENEMYHP = 3;
 int enemyState = 0;
-int enemySteps = 20;  //Number of cycles before enemy moves
-
-/* Private Methods ------------------------- */
-
-/* Private Structs ------------------------- */
-typedef struct ENTITY {
-	int posit_x;
-	int posit_y;
-	int health;
-	bool enabled;
-	enum entity type;
-}entity_t;
-
-typedef struct gameProjectile {
-	int posit_x;
-	int posit_y;
-	char enable;
-}projectile_t;
+int numProjectiles = 0;
 
 /* Public entities ------------------------- */
 entity_t enemyList[NUM_ENEMIES];
 entity_t playerChar;
 projectile_t projectileList[NUM_PROJECTILES];
-int numProjectiles = 0;
 
 /* Transfer functions ---------------------- */
 //transfer Global player to local player struct
