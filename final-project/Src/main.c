@@ -133,6 +133,8 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
+
+
   // initialization
   if (IS_MODE_ENGINE())
   {
@@ -152,9 +154,6 @@ int main(void)
     initInput();
     initOutput(&huart1);
   }
-
-  // delay to prevent button bounce that affects sensor calibration
-  HAL_Delay(500);
 
   // start timer interrupts
   HAL_TIM_Base_Start_IT(&htim2);
@@ -642,8 +641,10 @@ void initEngine()
 // initialize input configuration
 void initInput()
 {
+  // delay to prevent button bounce that affects sensor calibration
+  HAL_Delay(500);
+
   fusion_init(0);
-  fusion_calibrate_gyro();
 }
 
 // delay

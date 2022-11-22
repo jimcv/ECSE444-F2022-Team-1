@@ -87,6 +87,12 @@ void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, Stack
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+/**
+ * Create a shared variable.
+ * @param count the number of allowed concurrent accesses
+ * @param var the pointer to the variable to share.
+ * @returns the ID of the created variable, -1 if not created.
+ */
 uint32_t createSharedVariable(int32_t count, void *var)
 {
   if (activeSemaphores >= NUM_SEMAPHORES)
@@ -101,6 +107,11 @@ uint32_t createSharedVariable(int32_t count, void *var)
   return activeSemaphores++;
 }
 
+/**
+ * Get the ID of a shared variable.
+ * @param var the pointer to the shared variable.
+ * @returns the ID of the variable, -1 if it does not exist.
+ */
 uint32_t getSharedVariable(void *var)
 {
   uint32_t i = 0;
@@ -110,14 +121,20 @@ uint32_t getSharedVariable(void *var)
     sv = semaphores + i;
     if (sv->var && sv->var == var)
     {
-      break;
+      return i;
     }
     ++i;
   }
 
-  return i;
+  return -1;
 }
 
+/**
+ * Lock a shared variable.
+ * @param idx the ID of the shared variable.
+ * @param timeout the maximum time to wait to take the variable.
+ * @returns the pointer to the shared variable, NULL if not successful.
+ */
 void *lockSharedVariable(uint32_t idx, uint32_t timeout)
 {
   return idx < NUM_SEMAPHORES && osSemaphoreWait(semaphores[idx].semaphoreHandle, timeout) == osOK
@@ -125,11 +142,21 @@ void *lockSharedVariable(uint32_t idx, uint32_t timeout)
       : NULL;
 }
 
+/**
+ * Release a shared variable.
+ * @param idx the ID of the shared variable.
+ */
 void releaseSharedVariable(uint32_t idx)
 {
   osSemaphoreRelease(semaphores[idx].semaphoreHandle);
 }
 
+/**
+ * Wrap a function that uses a shared variable.
+ * @param idx the ID of the shared variable to pass into the function.
+ * @param timeout the maximum time to wait for access to the variable.
+ * @param func the function to execute after gaining access.
+ */
 void lockSharedVariableAndExecute(uint32_t idx, uint32_t timeout, locked_func func)
 {
   void *var = lockSharedVariable(idx, timeout);

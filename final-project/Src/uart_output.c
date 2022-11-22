@@ -10,6 +10,10 @@ UART_HandleTypeDef *_huart;
 uint16_t _n = MAX_BUF_SIZE;
 uint8_t _buf[2 * MAX_BUF_SIZE];
 
+/**
+ * Initialize the output handler.
+ * @param huart the UART handle.
+ */
 void initOutput(UART_HandleTypeDef *huart)
 {
   _huart = huart;
@@ -38,6 +42,10 @@ void initOutput(UART_HandleTypeDef *huart)
   memset(_buf, '\b', _n);
 }
 
+/**
+ * Update the output buffer.
+ * @param gameObjectsPointer the game objects pointer.
+ */
 void writeBuffer(void *gameObjectsPtr)
 {
   game_objects *gameObjects = (game_objects*)gameObjectsPtr;
@@ -80,11 +88,18 @@ void writeBuffer(void *gameObjectsPtr)
   }
 }
 
+/**
+ * Update the output buffer.
+ * @param gameObjectsSV the shared variable ID for the game objects.
+ */
 void updateBuffer(uint32_t gameObjectsSV)
 {
   lockSharedVariableAndExecute(gameObjectsSV, OS_TIMEOUT, writeBuffer);
 }
 
+/**
+ * Send the output buffer over UART.
+ */
 void transmitBuffer()
 {
   hal_exec(HAL_UART_Transmit_DMA(_huart, _buf, 2 * _n));
