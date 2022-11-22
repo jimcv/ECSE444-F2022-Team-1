@@ -19,6 +19,7 @@ enum entity { player, enemyUnit };  //0 is player and 1 is enemy
 //enemy
 int MAX_ENEMYHP = 3;
 int enemyState = 0;
+int enemySteps = 20;  //Number of cycles before enemy moves
 
 /* Private Methods ------------------------- */
 
@@ -27,6 +28,7 @@ typedef struct ENTITY {
 	int posit_x;
 	int posit_y;
 	int health;
+	bool enabled;
 	enum entity type;
 }entity_t;
 
@@ -57,6 +59,7 @@ void getGlobalEnemies(enemy* enemies_t){
 		enemyList[eidx].health = enemies_t[eidx].health;
 		enemyList[eidx].posit_x = enemies_t[eidx].rb.x;
 		enemyList[eidx].posit_y = enemies_t[eidx].rb.y;
+		enemyList[eidx].enabled = enemies_t[eidx].enabled;
 		enemyList[eidx].type = enemyUnit;
 	}
 }
@@ -79,6 +82,7 @@ void updateGlobalEnemies(enemy* enemy_t){
 		enemy_t[eidx].health = enemyList[eidx].health;
 		enemy_t[eidx].rb.x = enemyList[eidx].posit_x;
 		enemy_t[eidx].rb.y = enemyList[eidx].posit_y;
+		enemy_t[eidx].enabled = enemyList[eidx].enabled;
 	}
 }
 void updateGlobalProjectiles(projectile* projectiles_t){
@@ -113,6 +117,7 @@ void createEnemies(enemy* enemy_t) {
 		/*enemy starting position is set on row 10 side by side assumming they are only one ASCII character currently*/
 		thisEnemy.posit_x = start + (currEnemies * step);
 		thisEnemy.posit_y = 1;
+		thisEnemy.enabled = true;
 		enemyList[currEnemies] = thisEnemy;
 	}
 	updateGlobalEnemies(enemy_t);
@@ -161,7 +166,12 @@ void collisionDetection() {
 					projectileList[pidx].enable = 0;
 					projectileList[pidx].posit_x = 0;
 					projectileList[pidx].posit_y = 0;
-					enemyList[eidx].health--;
+					if (enemyList[eidx].health > 0) {
+						enemyList[eidx].health--;
+					}
+					if(enemyList[eidx].health <= 0){
+						enemyList[eidx].enabled = false;
+					}
 					break;
 				}
 			}
@@ -170,17 +180,7 @@ void collisionDetection() {
 }
 /* Enemy AI ------------------------------------- */
 void enemyMove() {
-	switch (enemyState) {
-	case 0:
-		enemyState++;
-		break;
-	case 1:
-		enemyState++;
-		break;
-	case 2:
-		enemyState++;
-		break;
-	case 3:
+	if (enemyState >= enemySteps) {
 		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
 			if (enemyList[eidx].health > 0) {
 				if (enemyList[eidx].posit_y < MAX_Y - 1) {
@@ -189,8 +189,8 @@ void enemyMove() {
 			}
 		}
 		enemyState = 0;
-		break;
 	}
+	enemyState++;
 	/*switch (enemyState) {
 	case 0:
 		//move right 1
@@ -212,6 +212,7 @@ void enemyReached() {
 			enemyList[eidx].health = 0;
 			enemyList[eidx].posit_x = 0;
 			enemyList[eidx].posit_y = 0;
+			enemyList[eidx].enabled = false;
 			if(playerChar.health > 0){
 				playerChar.health--;
 			}
