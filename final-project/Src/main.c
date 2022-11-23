@@ -56,20 +56,22 @@ UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
 
 osThreadId engineTaskHandle;
-osThreadId inputTaskHandle;
 osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
 // running mode
 const MODE mode = MODE_RTOS;
 
+// button flags
+uint32_t _buttonWentDownSV;
+bool _buttonWentDown = false;
+
 // game objects
-user _user;
-enemy _enemies[NUM_ENEMIES];
-projectile _projectiles[NUM_PROJECTILES];
-// Game flags
-bool PROJECTILE_FIRE = false;
+uint32_t _gameObjectsSV;
+game_objects _gameObjects;
+
 // UART flags
-bool UART_DMA_READY = true;
+uint32_t _uartReadySV;
+bool _uartReady = true;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,7 +85,6 @@ static void MX_OCTOSPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
 void StartEngineTask(void const * argument);
-void StartInputTask(void const * argument);
 void StartOutputTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
@@ -132,9 +133,27 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
-  // initialize sensors, delay prevents button bounce to affect sensor calibration
-  HAL_Delay(500);
-  fusion_init(0);
+
+
+  // initialization
+  if (IS_MODE_ENGINE())
+  {
+    initEngine();
+  }
+  else if (IS_MODE_INPUT())
+  {
+    initInput();
+  }
+  else if (IS_MODE_OUTPUT())
+  {
+    initOutput(&huart1);
+  }
+  else if (IS_MODE_RTOS())
+  {
+    initEngine();
+    initInput();
+    initOutput(&huart1);
+  }
 
   // start timer interrupts
   HAL_TIM_Base_Start_IT(&htim2);
@@ -146,30 +165,24 @@ int main(void)
   // start testing mode
   if (IS_MODE_ENGINE())
   {
-    initEngine();
     StartEngineTask(NULL);
   }
   else if (IS_MODE_INPUT())
   {
-    initInput();
-    StartInputTask(NULL);
+    for (;;)
+    {
+      float vals[3];
+      fusion_get_euler(vals, 0);
+    }
   }
   else if (IS_MODE_OUTPUT())
   {
-    initOutput(&huart1);
     StartOutputTask(NULL);
   }
 
   // start RTOS
   if (IS_MODE_RTOS())
   {
-    initEngine();
-    initInput();
-    initOutput(&huart1);
-
-  // initialize game data
-  createPlayer(&_user);
-  createEnemies(_enemies);
   /* USER CODE END 2 */
 
   /* USER CODE BEGIN RTOS_MUTEX */
@@ -178,6 +191,9 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
+  _buttonWentDownSV = createSharedVariable(1, &_buttonWentDown);
+  _gameObjectsSV = createSharedVariable(1, &_gameObjects);
+  _uartReadySV = createSharedVariable(1, &_uartReady);
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -192,10 +208,6 @@ int main(void)
   /* definition and creation of engineTask */
   osThreadDef(engineTask, StartEngineTask, osPriorityNormal, 0, 128);
   engineTaskHandle = osThreadCreate(osThread(engineTask), NULL);
-
-  /* definition and creation of inputTask */
-  osThreadDef(inputTask, StartInputTask, osPriorityIdle, 0, 128);
-  inputTaskHandle = osThreadCreate(osThread(inputTask), NULL);
 
   /* definition and creation of outputTask */
   osThreadDef(outputTask, StartOutputTask, osPriorityIdle, 0, 128);
@@ -621,19 +633,18 @@ static void MX_GPIO_Init(void)
 // initialize game engine
 void initEngine()
 {
-
+  // initialize game data
+  createPlayer(&_gameObjects.user);
+  createEnemies(_gameObjects.enemies);
 }
 
 // initialize input configuration
 void initInput()
 {
-  // initialize I2C peripherals
-  //if (BSP_MAGNETO_Init() != MAGNETO_OK ||
-  //    BSP_GYRO_Init() != GYRO_OK)
-  if (false)
-  {
-    Error_Handler();
-  }
+  // delay to prevent button bounce that affects sensor calibration
+  HAL_Delay(500);
+
+  fusion_init(0);
 }
 
 // delay
@@ -695,27 +706,22 @@ void led_red_off()
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	if (GPIO_Pin == USER_BUTTON_Pin && HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == 1)
-	{
-		// do something when USER_BUTTON is pressed
-		PROJECTILE_FIRE = true;
-	}
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	if (htim->Instance == TIM3)
-	{
-		// TIM3 interrupt: sensor control
-		fusion_update();
-	}
+  if (GPIO_Pin == USER_BUTTON_Pin && HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_SET)
+  {
+    // do something when USER_BUTTON is pressed
+    lockSharedVariable(_buttonWentDownSV, IRQ_TIMEOUT);
+    _buttonWentDown = true;
+    releaseSharedVariable(_buttonWentDownSV);
+  }
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
   if (huart->Instance == USART1) {
     // indicate that DMA transmission has completed
-    UART_DMA_READY = true;
+    lockSharedVariable(_uartReadySV, IRQ_TIMEOUT);
+    _uartReady = true;
+    releaseSharedVariable(_uartReadySV);
   }
 }
 /* USER CODE END 4 */
@@ -730,34 +736,23 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 void StartEngineTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
+  bool buttonWentDown = false;
   /* Infinite loop */
   for(;;)
   {
-	delay(500 / REFRESH_RATE);
-	float pEulerData[3];
-	fusion_get_euler(pEulerData, 0);
-	updateGame(&_user, _enemies, _projectiles, PROJECTILE_FIRE, pEulerData[1]);
-	PROJECTILE_FIRE = false;
+    delay(500 / REFRESH_RATE);
+
+    // determine if button pressed
+    lockSharedVariable(_buttonWentDownSV, OS_TIMEOUT);
+    buttonWentDown = _buttonWentDown;
+    _buttonWentDown = false;
+    releaseSharedVariable(_buttonWentDownSV);
+
+    float pEulerData[3];
+    fusion_get_euler(pEulerData, 0);
+    updateGame(_gameObjectsSV, buttonWentDown, pEulerData[1]);
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_StartInputTask */
-/**
-* @brief Function implementing the inputTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartInputTask */
-void StartInputTask(void const * argument)
-{
-  /* USER CODE BEGIN StartInputTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    delay(1);
-  }
-  /* USER CODE END StartInputTask */
 }
 
 /* USER CODE BEGIN Header_StartOutputTask */
@@ -770,16 +765,53 @@ void StartInputTask(void const * argument)
 void StartOutputTask(void const * argument)
 {
   /* USER CODE BEGIN StartOutputTask */
+  bool uartReady = false;
   /* Infinite loop */
   for(;;)
   {
+    // delay
     delay(1000 / REFRESH_RATE);
-    if (UART_DMA_READY) {
-      updateBuffer(&_user, _enemies, _projectiles);
-      UART_DMA_READY = false;
+
+    // update buffer
+    updateBuffer(_gameObjectsSV);
+
+    // determine if UART is ready
+    lockSharedVariable(_uartReadySV, OS_TIMEOUT);
+    uartReady = _uartReady;
+    _uartReady = false;
+    releaseSharedVariable(_uartReadySV);
+
+    // update buffer
+    if (uartReady) {
+      transmitBuffer();
     }
   }
   /* USER CODE END StartOutputTask */
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM6 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+  if (htim->Instance == TIM3)
+  {
+    // TIM3 interrupt: sensor control
+    fusion_update();
+  }
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM6) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
 }
 
 /**

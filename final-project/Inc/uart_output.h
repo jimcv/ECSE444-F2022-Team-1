@@ -11,16 +11,13 @@ void initOutput(UART_HandleTypeDef *huart);
 
 /**
  * Update the output buffer.
- * @param _user The user object.
- * @param _enemies The list of enemies.
+ * @param gameObjectsSV the shared variable ID for the game objects.
  */
-void updateBuffer(user *user, enemy enemies[NUM_ENEMIES], projectile projectiles[NUM_PROJECTILES]);
+void updateBuffer(uint32_t gameObjectsSV);
 
 /**
- * Send the current buffer over UART.
- * @param buf The buffer to transmit.
- * @param n The number of characters to transmit.
+ * Send the output buffer over UART.
  */
-void transmitBuffer(uint8_t *buf, uint16_t n);
+void transmitBuffer();
 
 #endif // __UART_OUTPUT_H
