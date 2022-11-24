@@ -53,6 +53,7 @@ bool writeConfiguration()
 
 /**
  * Copy the local configuration to a pointer.
+ * @param config the pointer to write to.
  */
 void getConfiguration(configuration *config)
 {
@@ -66,4 +67,58 @@ void getConfiguration(configuration *config)
 bool isConfigurationValid()
 {
   return _config.magic == MAGIC_NUMBER;
+}
+
+/**
+ * Copy an engine configuration model to the local store.
+ * @param config the model to copy to the local store.
+ */
+void setEngineConfiguration(engine_configuration *config)
+{
+  _config.engine_config = *config;
+}
+
+/**
+ * Copy the local engine configuration to a pointer.
+ * @param config the pointer to write to.
+ */
+void getEngineConfiguration(engine_configuration *config)
+{
+  *config = _config.engine_config;
+}
+
+/**
+ * Copy an input configuration model to the local store.
+ * @param config the model to copy to the local store.
+ */
+void setInputConfiguration(input_configuration *config)
+{
+  _config.input_config = *config;
+}
+
+/**
+ * Copy the local input configuration to a pointer.
+ * @param config the pointer to write to.
+ */
+void getInputConfiguration(input_configuration *config)
+{
+  *config = _config.input_config;
+}
+
+/**
+ * Copy an output configuration model to the local store.
+ * @param config the model to copy to the local store.
+ */
+void setOutputConfiguration(output_configuration *config)
+{
+  _config.output_config = *config;
+}
+
+/**
+ * Copy the local output configuration to a pointer.
+ * @param config the pointer to write to.
+ */
+void getOutputConfiguration(output_configuration *config)
+{
+  *config = _config.output_config;
 }
