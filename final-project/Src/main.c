@@ -135,25 +135,32 @@ int main(void)
   /* USER CODE BEGIN 2 */
   // fetch configuration from flash
   initFlash();
+  readConfiguration();
+  bool reconfigurationRequested = !isConfigurationValid();
 
   // initialization
   if (IS_MODE_ENGINE())
   {
-    initEngine();
+    initEngine(reconfigurationRequested, &_gameObjects);
   }
   else if (IS_MODE_INPUT())
   {
-    initInput();
+    initInput(reconfigurationRequested);
   }
   else if (IS_MODE_OUTPUT())
   {
-    initOutput(&huart1);
+    initOutput(reconfigurationRequested, &huart1);
   }
   else if (IS_MODE_RTOS())
   {
-    initEngine();
-    initInput();
-    initOutput(&huart1);
+    initEngine(reconfigurationRequested, &_gameObjects);
+    initInput(reconfigurationRequested);
+    initOutput(reconfigurationRequested, &huart1);
+  }
+
+  if (reconfigurationRequested)
+  {
+    writeConfiguration();
   }
 
   // start timer interrupts
@@ -631,23 +638,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-// initialize game engine
-void initEngine()
-{
-  // initialize game data
-  createPlayer(&_gameObjects.user);
-  createEnemies(_gameObjects.enemies);
-}
-
-// initialize input configuration
-void initInput()
-{
-  // delay to prevent button bounce that affects sensor calibration
-  HAL_Delay(500);
-
-  fusion_init(0);
-}
 
 // delay
 void delay(uint32_t delay)

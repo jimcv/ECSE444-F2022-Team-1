@@ -23,6 +23,7 @@
 
 // private includes
 #include "sensor_fusion.h"
+#include "flash_config.h"
 #include "../Components/lsm6dsl/lsm6dsl.h"
 #include "../Components/lis3mdl/lis3mdl.h"
 
@@ -30,7 +31,8 @@
 const IRQn_Type SENSOR_TIM_IRQ = TIM3_IRQn;
 
 // private variables
-static int16_t gyro_offset[3] = {0, 0, 0};
+input_configuration inputConfig;
+
 static int16_t mag_hard_iron[3] = {0, 0, 0};
 static int16_t accel[3] = {0, 0, 0};
 static int16_t gyro[3] = {0, 0, 0};
@@ -53,6 +55,28 @@ static void gyro_to_dps(int16_t *pData, float *pResult);
 static void gyro_to_radps(int16_t *pData, float *pResult);
 static void mag_to_gauss(int16_t *pData, float *pResult);
 static void mag_to_ut(int16_t *pData, float *pResult);
+
+/**
+ * Initialize input configuration.
+ * @param reconfigurationRequested whether to manually write configuration.
+ */
+void initInput(bool reconfigurationRequested)
+{
+  if (reconfigurationRequested)
+  {
+    // delay to prevent button bounce that affects sensor calibration
+    HAL_Delay(500);
+
+    fusion_init(true, 0);
+
+    setInputConfiguration(&inputConfig);
+  }
+  else
+  {
+    getInputConfiguration(&inputConfig);
+    fusion_init(false, 0);
+  }
+}
 
 /**
  * Put the board down on a surface to capture the gyro offset.
@@ -87,9 +111,9 @@ void fusion_calibrate_gyro()
 		sum[1] += gyro_y[i];
 		sum[2] += gyro_z[i];
 	}
-	gyro_offset[0] = sum[0] / num_samples;
-	gyro_offset[1] = sum[1] / num_samples;
-	gyro_offset[2] = sum[2] / num_samples;
+	inputConfig.gyro_offset[0] = sum[0] / num_samples;
+	inputConfig.gyro_offset[1] = sum[1] / num_samples;
+	inputConfig.gyro_offset[2] = sum[2] / num_samples;
 	// restore IRQ
 	if (irq_en)
 	{
@@ -100,10 +124,11 @@ void fusion_calibrate_gyro()
 /**
  * Initialize sensors and Madgwick algorithm. The board should not be moved during the execution of this function.
  *
+ * doCalibrate: if the board needs to be calibrated.
  * useMagnetometer: if magnetometer is used, Z axis drift will be corrected, but there will be magnetic disturbances.
  * 					if 0, magnetometer is not used and Z axis will have drift.
  */
-void fusion_init(int useMagnetometer)
+void fusion_init(bool doCalibrate, int useMagnetometer)
 {
 	// disable IRQ if enabled
 	uint32_t irq_en = __NVIC_GetEnableIRQ(SENSOR_TIM_IRQ);
@@ -114,7 +139,10 @@ void fusion_init(int useMagnetometer)
 	useMag = useMagnetometer;
 	LSM6_init();
 	LIS3MDL_init();
-	fusion_calibrate_gyro();
+	if (doCalibrate)
+	{
+	  fusion_calibrate_gyro();
+	}
 	// Need to run Madgwick a little bit to make it converge to absolute Z axis value based on magnetic field
 	if (useMag)
 	{
@@ -237,9 +265,9 @@ static void LSM6_read_gyro(int16_t *pGyroData)
 	uint8_t buffer[6];
 	// gyro
 	SENSOR_IO_ReadMultiple(LSM6DSL_ACC_GYRO_I2C_ADDRESS_LOW, LSM6DSL_ACC_GYRO_OUTX_L_G, buffer, 6);
-	pGyroData[0] = (int16_t)(buffer[1] << 8 | buffer[0]) - gyro_offset[0];
-	pGyroData[1] = (int16_t)(buffer[3] << 8 | buffer[2]) - gyro_offset[1];
-	pGyroData[2] = (int16_t)(buffer[5] << 8 | buffer[4]) - gyro_offset[2];
+	pGyroData[0] = (int16_t)(buffer[1] << 8 | buffer[0]) - inputConfig.gyro_offset[0];
+	pGyroData[1] = (int16_t)(buffer[3] << 8 | buffer[2]) - inputConfig.gyro_offset[1];
+	pGyroData[2] = (int16_t)(buffer[5] << 8 | buffer[4]) - inputConfig.gyro_offset[2];
 }
 
 static void LIS3MDL_init()

@@ -7,12 +7,7 @@
 
 #ifndef GAME_ENGINE_H_
 #define GAME_ENGINE_H_
-/* Private Defines ------------------------- */
-//player
-#define MAX_PLAYERHP 5
-#define MAX_ENEMYHP 3
-#define enemySteps 20  //Number of cycles before enemy moves
-
+/* Private Includes ------------------------- */
 #include "main.h"
 
 /* Private enums ------------------------- */
@@ -32,6 +27,13 @@ typedef struct gameProjectile {
 	int posit_y;
 	char enable;
 }projectile_t;
+
+/**
+ * Initialize entities.
+ * @param reconfigurationRequested whether to manually write configuration.
+ * @param gameObjects pointer to the global game objects store.
+ */
+void initEngine(bool reconfigurationRequested, game_objects *gameObjects);
 
 /**
  * Update the game structures after an iteration.
