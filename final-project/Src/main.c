@@ -120,7 +120,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  disableSharedVariables();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -195,6 +195,7 @@ int main(void)
   _buttonWentDownSV = createSharedVariable(1, &_buttonWentDown);
   _gameObjectsSV = createSharedVariable(1, &_gameObjects);
   _uartReadySV = createSharedVariable(1, &_uartReady);
+  enableSharedVariables();
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */

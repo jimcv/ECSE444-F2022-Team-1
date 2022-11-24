@@ -112,9 +112,10 @@ void Error_Handler(void);
 uint32_t createSharedVariable(int32_t count, void *var);
 uint32_t getSharedVariable(void *var);
 
+void enableSharedVariables();
+void disableSharedVariables();
 void *lockSharedVariable(uint32_t idx, uint32_t timeout);
 void releaseSharedVariable(uint32_t idx);
-
 void lockSharedVariableAndExecute(uint32_t idx, uint32_t timeout, locked_func func);
 
 void initEngine();
