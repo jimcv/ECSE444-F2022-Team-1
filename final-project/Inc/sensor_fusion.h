@@ -13,6 +13,7 @@
 #include "stm32l4xx_hal.h"
 #include "MadgwickAHRS.h"
 #include "quat4d.h"
+#include "main.h"
 
 // exported defines
 #define ARRAY_LEN(a) sizeof(a) / sizeof(a[0])
@@ -21,8 +22,9 @@
 extern const IRQn_Type SENSOR_TIM_IRQ;
 
 // exported functions
+void initInput(bool reconfigurationRequested);
 void fusion_calibrate_gyro();
-void fusion_init(int useMagnetometer);
+void fusion_init(bool doCalibration, int useMagnetometer);
 void fusion_update();
 void fusion_get_euler(float *pEulerData, int useRadian);
 

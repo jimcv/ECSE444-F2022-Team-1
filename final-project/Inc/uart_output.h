@@ -4,10 +4,11 @@
 #define __UART_OUTPUT_H
 
 /**
- * Configuration and parameter initialization.
- * @param huart The UART handle.
+ * Initialize the output handler.
+ * @param whether to reconfigure.
+ * @param huart the UART handle.
  */
-void initOutput(UART_HandleTypeDef *huart);
+void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart);
 
 /**
  * Update the output buffer.

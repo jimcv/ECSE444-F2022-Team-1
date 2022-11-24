@@ -7,16 +7,47 @@
 
 /* Private Includes ------------------------ */
 #include "game_engine.h"
+#include "flash_config.h"
 
 /* Private Variable ------------------------ */
+// configuration model
+engine_configuration engineConfig;
+
 //enemy
 int enemyState = 0;
 int numProjectiles = 0;
 
-/* Public entities ------------------------- */
 entity_t enemyList[NUM_ENEMIES];
 entity_t playerChar;
 projectile_t projectileList[NUM_PROJECTILES];
+
+/**
+ * Initialize entities.
+ * @param reconfigurationRequested whether to manually write configuration.
+ * @param gameObjects pointer to the global game objects store.
+ */
+void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
+{
+  if (reconfigurationRequested)
+  {
+    engineConfig.enemySteps = 20;
+    engineConfig.maxEnemyHP = 3;
+    engineConfig.maxPlayerHP = 5;
+    setEngineConfiguration(&engineConfig);
+  }
+  else
+  {
+    getEngineConfiguration(&engineConfig);
+  }
+
+  createPlayer(&gameObjects->user);
+  createEnemies(gameObjects->enemies);
+  for (uint32_t i = 0; i < NUM_PROJECTILES; ++i)
+  {
+    projectileList[i].enable = false;
+    gameObjects->projectiles[i].enabled = false;
+  }
+}
 
 /* Transfer functions ---------------------- */
 //transfer data back to global variables
@@ -58,7 +89,7 @@ void updateGlobalGameObjects(void *gameObjectsPtr)
  */
 void createPlayer(user* user_t){
 	entity_t thisPlayer;
-	thisPlayer.health = MAX_PLAYERHP;
+	thisPlayer.health = engineConfig.maxPlayerHP;
 	thisPlayer.posit_x = MAX_X/2;
 	thisPlayer.posit_y = MAX_Y - 1;
 	thisPlayer.type = player;
@@ -80,7 +111,7 @@ void createEnemies(enemy enemy_t[NUM_ENEMIES]) {
 		entity_t thisEnemy;
 		int step = MAX_X/NUM_ENEMIES;
 		int start = step / 2;
-		thisEnemy.health = MAX_ENEMYHP;
+		thisEnemy.health = engineConfig.maxEnemyHP;
 		thisEnemy.type = enemyUnit;
 		/*enemy starting position is set on row 10 side by side assumming they are only one ASCII character currently*/
 		thisEnemy.posit_x = start + (currEnemies * step);
@@ -158,7 +189,7 @@ void collisionDetection() {
 
 /* Enemy AI ------------------------------------- */
 void enemyMove() {
-	if (enemyState >= enemySteps) {
+	if (enemyState >= engineConfig.enemySteps) {
 		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
 			if (enemyList[eidx].health > 0) {
 				if (enemyList[eidx].posit_y < MAX_Y - 1) {
