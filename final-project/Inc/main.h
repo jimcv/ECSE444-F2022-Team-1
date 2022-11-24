@@ -121,6 +121,8 @@ void lockSharedVariableAndExecute(uint32_t idx, uint32_t timeout, locked_func fu
 void delay(uint32_t delay);
 void hal_exec(uint8_t HAL_Status);
 void gen_sine(uint32_t *buf, uint32_t buf_size, float step, uint32_t dac_max);
+bool is_user_btn_down();
+bool is_user_btn_up();
 void led_green_on();
 void led_green_off();
 void led_red_on();

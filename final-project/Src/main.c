@@ -136,7 +136,7 @@ int main(void)
   // fetch configuration from flash
   initFlash();
   readConfiguration();
-  bool reconfigurationRequested = !isConfigurationValid();
+  bool reconfigurationRequested = !isConfigurationValid() || is_user_btn_down();
 
   // initialization
   if (IS_MODE_ENGINE())
@@ -658,6 +658,18 @@ void hal_exec(uint8_t HAL_Status)
   if (HAL_Status != HAL_OK) Error_Handler();
 }
 
+// determine if the user button is pressed
+bool is_user_btn_down()
+{
+  return HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_RESET;
+}
+
+// determine if the user button is released
+bool is_user_btn_up()
+{
+  return HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_SET;
+}
+
 // generate sine wave data in the buffer
 void gen_sine(uint32_t *buf, uint32_t buf_size, float sine_step, uint32_t dac_max)
 {
@@ -692,9 +704,9 @@ void led_red_off()
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  if (GPIO_Pin == USER_BUTTON_Pin && HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_SET)
+  if (GPIO_Pin == USER_BUTTON_Pin && is_user_btn_up())
   {
-    // do something when USER_BUTTON is pressed
+    // do something when USER_BUTTON is released
     lockSharedVariable(_buttonWentDownSV, IRQ_TIMEOUT);
     _buttonWentDown = true;
     releaseSharedVariable(_buttonWentDownSV);

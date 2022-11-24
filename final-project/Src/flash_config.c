@@ -13,7 +13,7 @@
 configuration _config;
 
 // wrapper function to handle QSPI flash errors
-#define flash_exec(call) call != QSPI_OK
+#define flash_exec(call) call == QSPI_OK
 
 /*
  * Initialize the flash configuration.
