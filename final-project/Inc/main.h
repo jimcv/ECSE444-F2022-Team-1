@@ -78,6 +78,7 @@ typedef struct __game_objects
   projectile projectiles[NUM_PROJECTILES];
 } game_objects;
 
+// Model to interface with a shared variable.
 typedef struct __sharedvariable
 {
   osSemaphoreDef_t semaphoreDef;
@@ -121,7 +122,6 @@ void initInput();
 
 void delay(uint32_t delay);
 void hal_exec(uint8_t HAL_Status);
-void flash_exec(uint8_t QSPI_Memory_Status);
 void gen_sine(uint32_t *buf, uint32_t buf_size, float step, uint32_t dac_max);
 void led_green_on();
 void led_green_off();
