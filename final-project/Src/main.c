@@ -22,6 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "flash_config.h"
 #include "uart_output.h"
 #include "sensor_fusion.h"
 #include "game_engine.h"
@@ -132,8 +133,8 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-
-
+  // fetch configuration from flash
+  initFlash();
 
   // initialization
   if (IS_MODE_ENGINE())
@@ -664,12 +665,6 @@ void delay(uint32_t delay)
 void hal_exec(uint8_t HAL_Status)
 {
   if (HAL_Status != HAL_OK) Error_Handler();
-}
-
-// wrapper function to handle QSPI flash errors
-void flash_exec(uint8_t QSPI_Memory_Status)
-{
-	if (QSPI_Memory_Status != QSPI_OK) Error_Handler();
 }
 
 // generate sine wave data in the buffer
