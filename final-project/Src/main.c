@@ -22,6 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "flash_config.h"
 #include "uart_output.h"
 #include "sensor_fusion.h"
 #include "game_engine.h"
@@ -119,7 +120,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
+  disableSharedVariables();
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -132,27 +133,34 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-
-
+  // fetch configuration from flash
+  initFlash();
+  readConfiguration();
+  bool reconfigurationRequested = !isConfigurationValid() || is_user_btn_down();
 
   // initialization
   if (IS_MODE_ENGINE())
   {
-    initEngine();
+    initEngine(reconfigurationRequested, &_gameObjects);
   }
   else if (IS_MODE_INPUT())
   {
-    initInput();
+    initInput(reconfigurationRequested);
   }
   else if (IS_MODE_OUTPUT())
   {
-    initOutput(&huart1);
+    initOutput(reconfigurationRequested, &huart1);
   }
   else if (IS_MODE_RTOS())
   {
-    initEngine();
-    initInput();
-    initOutput(&huart1);
+    initEngine(reconfigurationRequested, &_gameObjects);
+    initInput(reconfigurationRequested);
+    initOutput(reconfigurationRequested, &huart1);
+  }
+
+  if (reconfigurationRequested)
+  {
+    writeConfiguration();
   }
 
   // start timer interrupts
@@ -194,6 +202,7 @@ int main(void)
   _buttonWentDownSV = createSharedVariable(1, &_buttonWentDown);
   _gameObjectsSV = createSharedVariable(1, &_gameObjects);
   _uartReadySV = createSharedVariable(1, &_uartReady);
+  enableSharedVariables();
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -630,23 +639,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-// initialize game engine
-void initEngine()
-{
-  // initialize game data
-  createPlayer(&_gameObjects.user);
-  createEnemies(_gameObjects.enemies);
-}
-
-// initialize input configuration
-void initInput()
-{
-  // delay to prevent button bounce that affects sensor calibration
-  HAL_Delay(500);
-
-  fusion_init(0);
-}
-
 // delay
 void delay(uint32_t delay)
 {
@@ -666,10 +658,16 @@ void hal_exec(uint8_t HAL_Status)
   if (HAL_Status != HAL_OK) Error_Handler();
 }
 
-// wrapper function to handle QSPI flash errors
-void flash_exec(uint8_t QSPI_Memory_Status)
+// determine if the user button is pressed
+bool is_user_btn_down()
 {
-	if (QSPI_Memory_Status != QSPI_OK) Error_Handler();
+  return HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_RESET;
+}
+
+// determine if the user button is released
+bool is_user_btn_up()
+{
+  return HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_SET;
 }
 
 // generate sine wave data in the buffer
@@ -706,9 +704,9 @@ void led_red_off()
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  if (GPIO_Pin == USER_BUTTON_Pin && HAL_GPIO_ReadPin(USER_BUTTON_GPIO_Port, USER_BUTTON_Pin) == GPIO_PIN_SET)
+  if (GPIO_Pin == USER_BUTTON_Pin && is_user_btn_up())
   {
-    // do something when USER_BUTTON is pressed
+    // do something when USER_BUTTON is released
     lockSharedVariable(_buttonWentDownSV, IRQ_TIMEOUT);
     _buttonWentDown = true;
     releaseSharedVariable(_buttonWentDownSV);
