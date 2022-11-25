@@ -17,7 +17,7 @@ typedef struct __engine_configuration
 // I2C configuration model.
 typedef struct __input_configuration
 {
-  float gyro_offset[3];
+  int16_t gyro_offset[3];
 } input_configuration;
 
 // UART configuration model.
