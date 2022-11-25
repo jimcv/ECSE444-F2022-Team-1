@@ -25,8 +25,8 @@ void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart)
     outputConfig.background = ' ';
     outputConfig.border = '*';
     outputConfig.enemy = '@';
-    outputConfig.projectile = '|';
-    outputConfig.user = '^';
+    outputConfig.projectile = '^';
+    outputConfig.user = 'A';
     setOutputConfiguration(&outputConfig);
   }
   else
