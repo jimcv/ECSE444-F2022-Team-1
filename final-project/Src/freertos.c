@@ -44,6 +44,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+bool semaphoresEnabled = false;
 uint32_t activeSemaphores = 0;
 shared_variable semaphores[NUM_SEMAPHORES] = {{{0, NULL}, NULL, NULL}};
 /* USER CODE END Variables */
@@ -130,6 +131,22 @@ uint32_t getSharedVariable(void *var)
 }
 
 /**
+ * Enable access control to shared variables.
+ */
+void enableSharedVariables()
+{
+  semaphoresEnabled = true;
+}
+
+/**
+ * Disable access control to shared variables.
+ */
+void disableSharedVariables()
+{
+  semaphoresEnabled = false;
+}
+
+/**
  * Lock a shared variable.
  * @param idx the ID of the shared variable.
  * @param timeout the maximum time to wait to take the variable.
@@ -137,7 +154,7 @@ uint32_t getSharedVariable(void *var)
  */
 void *lockSharedVariable(uint32_t idx, uint32_t timeout)
 {
-  return idx < NUM_SEMAPHORES && osSemaphoreWait(semaphores[idx].semaphoreHandle, timeout) == osOK
+  return idx < NUM_SEMAPHORES && (!semaphoresEnabled || osSemaphoreWait(semaphores[idx].semaphoreHandle, timeout) == osOK)
       ? semaphores[idx].var
       : NULL;
 }
@@ -148,7 +165,10 @@ void *lockSharedVariable(uint32_t idx, uint32_t timeout)
  */
 void releaseSharedVariable(uint32_t idx)
 {
-  osSemaphoreRelease(semaphores[idx].semaphoreHandle);
+  if (semaphoresEnabled)
+  {
+    osSemaphoreRelease(semaphores[idx].semaphoreHandle);
+  }
 }
 
 /**

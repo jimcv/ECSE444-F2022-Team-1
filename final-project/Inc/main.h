@@ -78,6 +78,7 @@ typedef struct __game_objects
   projectile projectiles[NUM_PROJECTILES];
 } game_objects;
 
+// Model to interface with a shared variable.
 typedef struct __sharedvariable
 {
   osSemaphoreDef_t semaphoreDef;
@@ -111,18 +112,17 @@ void Error_Handler(void);
 uint32_t createSharedVariable(int32_t count, void *var);
 uint32_t getSharedVariable(void *var);
 
+void enableSharedVariables();
+void disableSharedVariables();
 void *lockSharedVariable(uint32_t idx, uint32_t timeout);
 void releaseSharedVariable(uint32_t idx);
-
 void lockSharedVariableAndExecute(uint32_t idx, uint32_t timeout, locked_func func);
-
-void initEngine();
-void initInput();
 
 void delay(uint32_t delay);
 void hal_exec(uint8_t HAL_Status);
-void flash_exec(uint8_t QSPI_Memory_Status);
 void gen_sine(uint32_t *buf, uint32_t buf_size, float step, uint32_t dac_max);
+bool is_user_btn_down();
+bool is_user_btn_up();
 void led_green_on();
 void led_green_off();
 void led_red_on();
@@ -187,13 +187,6 @@ void led_red_off();
  * the frame more clearly
  */
 #define REFRESH_RATE (115200 / (MAX_BUF_SIZE * 6 * 10))
-// game characters
-#define USER '^'
-#define ENEMY '@'
-#define PROJECTILE '|'
-// playing field characters
-#define BACKGROUND ' '
-#define BORDER '*'
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
