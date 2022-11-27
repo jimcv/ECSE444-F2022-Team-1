@@ -18,7 +18,7 @@ uint8_t _buf[2 * MAX_BUF_SIZE];
  * @param whether to reconfigure.
  * @param huart the UART handle.
  */
-void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart)
+void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart, game_objects *game_objects)
 {
   if (reconfigurationRequested)
   {
@@ -58,6 +58,12 @@ void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart)
 
   // set clear buffer
   memset(_buf, '\b', _n);
+
+  // disable all text initially
+  for (uint32_t text = 0; text < MAX_Y; text++)
+  {
+    game_objects->text[text].enabled = false;
+  }
 }
 
 /**
@@ -70,6 +76,7 @@ void writeBuffer(void *gameObjectsPtr)
   user user = gameObjects->user;
   enemy *enemies = gameObjects->enemies;
   projectile *projectiles = gameObjects->projectiles;
+  game_text *text = gameObjects->text;
 
   // clear objects from buffer
   for (int i = _n; i < 2 * _n; i++) {
@@ -102,6 +109,23 @@ void writeBuffer(void *gameObjectsPtr)
       x = projectiles[i].x + 1;
       y = projectiles[i].y + 1;
       _buf[x + y * SCR_WIDTH + _n] = outputConfig.projectile;
+    }
+  }
+
+  // draw text
+  for (int i = 0; i < MAX_Y; i++)
+  {
+    if (text[i].enabled)
+    {
+      x = text[i].indentation + 1;
+      for (int c = 0; c < MAX_X; c++)
+      {
+        if (text[i].text[c] == '\0')
+        {
+          break;
+        }
+        _buf[x + c + i * SCR_WIDTH + _n] = text[i].text[c];
+      }
     }
   }
 }

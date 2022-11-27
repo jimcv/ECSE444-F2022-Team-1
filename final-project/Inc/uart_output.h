@@ -8,7 +8,7 @@
  * @param whether to reconfigure.
  * @param huart the UART handle.
  */
-void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart);
+void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart, game_objects *game_objects);
 
 /**
  * Update the output buffer.
