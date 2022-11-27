@@ -65,6 +65,19 @@ typedef rigid_body user;
 typedef rigid_body enemy;
 typedef rigid_body projectile;
 
+// Model to store text to display on screen
+#define MAX_X 20
+#define MAX_Y 15
+typedef struct __game_text
+{
+  // whether to draw the text
+  bool enabled;
+  // x_offset
+  int32_t indentation;
+  // string
+  char text[MAX_X];
+} game_text;
+
 // Model to store all game objects.
 #define NUM_ENEMIES 5
 #define NUM_PROJECTILES 10
@@ -76,6 +89,8 @@ typedef struct __game_objects
   enemy enemies[NUM_ENEMIES];
   // Projectiles.
   projectile projectiles[NUM_PROJECTILES];
+  // text.
+  game_text text[MAX_Y];
 } game_objects;
 
 // Model to interface with a shared variable.
@@ -156,17 +171,6 @@ void led_red_off();
 #define OS_TIMEOUT 30000
 #define IRQ_TIMEOUT 5
 #define NUM_SEMAPHORES 32
-
-// ================
-// INPUT DEFINES
-// ================
-
-// ================
-// ENGINE DEFINES
-// ================
-// dimensions of the playing field
-#define MAX_X 20
-#define MAX_Y 15
 
 // ================
 // OUTPUT DEFINES
