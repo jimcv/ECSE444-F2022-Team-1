@@ -21,4 +21,29 @@ void updateBuffer(uint32_t gameObjectsSV);
  */
 void transmitBuffer();
 
+/**
+ * Helper function for writing text on screen
+ *
+ * Note: (x, y) = (0, 0) will write the string in the top-left
+ * corner of the playing field
+ *
+ * @param gameObjects game object
+ * @param x the x-offset of the leftmost character of the text
+ * @param y the y-offset of the leftmost character of the text
+ * @param str the string to write on screen
+ * @return true if the text was successfully written to gameObjects
+ */
+bool writeText(game_objects *gameObjects, int x, int y, char *str);
+
+/**
+ * Helper function for clearing text on screen
+ *
+ * Note: (x, y) = (0, 0) will write the string in the top-left
+ * corner of the playing field
+ *
+ * @param gameObjects game object
+ * @param y the y-offset of the line to clear
+ */
+void clearText(game_objects *gameObjects, int y);
+
 #endif // __UART_OUTPUT_H
