@@ -149,13 +149,13 @@ int main(void)
   }
   else if (IS_MODE_OUTPUT())
   {
-    initOutput(reconfigurationRequested, &huart1);
+    initOutput(reconfigurationRequested, &huart1, &_gameObjects);
   }
   else if (IS_MODE_RTOS())
   {
     initEngine(reconfigurationRequested, &_gameObjects);
     initInput(reconfigurationRequested);
-    initOutput(reconfigurationRequested, &huart1);
+    initOutput(reconfigurationRequested, &huart1, &_gameObjects);
   }
 
   if (reconfigurationRequested)
