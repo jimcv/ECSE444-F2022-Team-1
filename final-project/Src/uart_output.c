@@ -124,7 +124,7 @@ void writeBuffer(void *gameObjectsPtr)
         {
           break;
         }
-        _buf[x + c + i * SCR_WIDTH + _n] = text[i].text[c];
+        _buf[x + c + (i + 1) * SCR_WIDTH + _n] = text[i].text[c];
       }
     }
   }
