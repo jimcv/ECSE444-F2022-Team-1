@@ -60,9 +60,9 @@ void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart, game_o
   memset(_buf, '\b', _n);
 
   // disable all text initially
-  for (uint32_t text = 0; text < MAX_Y; text++)
+  for (uint32_t line = 0; line < MAX_Y; line++)
   {
-    game_objects->text[text].enabled = false;
+    clearText(game_objects, line);
   }
 }
 
@@ -147,3 +147,40 @@ void transmitBuffer()
   hal_exec(HAL_UART_Transmit_DMA(_huart, _buf, 2 * _n));
 }
 
+/**
+ * Helper function for writing text on screen
+ *
+ * Note: (x, y) = (0, 0) will write the string in the top-left
+ * corner of the playing field
+ *
+ * @param gameObjects game object
+ * @param x the x-offset of the leftmost character of the text
+ * @param y the y-offset of the leftmost character of the text
+ * @param str the string to write on screen
+ * @return true if the text was successfully written to gameObjects
+ */
+bool writeText(game_objects *gameObjects, int x, int y, char *str)
+{
+  if (strlen(str) <= MAX_X)
+  {
+    gameObjects->text[y].enabled = true;
+    gameObjects->text[y].indentation = x;
+    strcpy(gameObjects->text[y].text, str);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Helper function for clearing text on screen
+ *
+ * Note: (x, y) = (0, 0) will write the string in the top-left
+ * corner of the playing field
+ *
+ * @param gameObjects game object
+ * @param y the y-offset of the line to clear
+ */
+void clearText(game_objects *gameObjects, int y)
+{
+  gameObjects->text[y].enabled = false;
+}
