@@ -161,7 +161,9 @@ void transmitBuffer()
  */
 bool writeText(game_objects *gameObjects, int x, int y, char *str)
 {
-  if (strlen(str) + x <= MAX_X)
+  if (strlen(str) + x <= MAX_X &&
+      x >= 0 && x <= MAX_X && // check bounds of x
+      y >= 0 && y <= MAX_Y)   // check bounds of y
   {
     gameObjects->text[y].enabled = true;
     gameObjects->text[y].indentation = x;
