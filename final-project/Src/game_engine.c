@@ -30,7 +30,7 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
 {
   if (reconfigurationRequested)
   {
-    engineConfig.enemySteps = 20;
+    engineConfig.enemySteps = 60; //must be divisible by 6 because 6 states.
     engineConfig.maxEnemyHP = 3;
     engineConfig.maxPlayerHP = 5;
     setEngineConfiguration(&engineConfig);
@@ -189,7 +189,53 @@ void collisionDetection() {
 
 /* Enemy AI ------------------------------------- */
 void enemyMove() {
-	if (enemyState >= engineConfig.enemySteps) {
+	int stepping = engineConfig.enemySteps/6;
+	if (enemyState == stepping) {
+		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
+			if (enemyList[eidx].enabled) {
+				if (enemyList[eidx].posit_y < MAX_Y - 1) {
+					moveLeft(&enemyList[eidx]);
+				}
+			}
+		}
+	}
+	else if (enemyState == 2*stepping) {
+		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
+			if (enemyList[eidx].enabled) {
+				if (enemyList[eidx].posit_y < MAX_Y - 1) {
+					moveLeft(&enemyList[eidx]);
+				}
+			}
+		}
+	}
+	else if (enemyState == 3*stepping) {
+		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
+			if (enemyList[eidx].health > 0) {
+				if (enemyList[eidx].posit_y < MAX_Y - 1) {
+					enemyList[eidx].posit_y++;
+				}
+			}
+		}
+	}
+	else if (enemyState == 4*stepping) {
+		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
+			if (enemyList[eidx].enabled) {
+				if (enemyList[eidx].posit_y < MAX_Y - 1) {
+					moveRight(&enemyList[eidx]);
+				}
+			}
+		}
+	}
+	else if (enemyState == 5*stepping) {
+		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
+			if (enemyList[eidx].enabled) {
+				if (enemyList[eidx].posit_y < MAX_Y - 1) {
+					moveRight(&enemyList[eidx]);
+				}
+			}
+		}
+	}
+	else if (enemyState >= engineConfig.enemySteps) {
 		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
 			if (enemyList[eidx].health > 0) {
 				if (enemyList[eidx].posit_y < MAX_Y - 1) {
@@ -200,19 +246,6 @@ void enemyMove() {
 		enemyState = 0;
 	}
 	enemyState++;
-	/*switch (enemyState) {
-	case 0:
-		//move right 1
-		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
-			if (enemyList[eidx].health > 0) {
-				if (enemyList[eidx].posit_x < MAX_X - 1) {
-					enemyList[eidx].posit_x++;
-				}
-			}
-		}
-		enemyState++;
-		break;
-	}*/
 }
 
 /* Enemy reached goal --------------------------- */
