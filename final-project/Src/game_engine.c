@@ -20,7 +20,7 @@ int numProjectiles = 0;
 entity_t enemyList[NUM_ENEMIES];
 entity_t playerChar;
 projectile_t projectileList[NUM_PROJECTILES];
-game_text local_text[MAX_X];
+game_text local_text[MAX_Y];
 
 /**
  * Initialize entities.
