@@ -121,6 +121,9 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
   disableSharedVariables();
+  _buttonWentDownSV = createSharedVariable(1, &_buttonWentDown);
+  _gameObjectsSV = createSharedVariable(1, &_gameObjects);
+  _uartReadySV = createSharedVariable(1, &_uartReady);
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -149,13 +152,13 @@ int main(void)
   }
   else if (IS_MODE_OUTPUT())
   {
-    initOutput(reconfigurationRequested, &huart1);
+    initOutput(reconfigurationRequested, &huart1, &_gameObjects);
   }
   else if (IS_MODE_RTOS())
   {
     initEngine(reconfigurationRequested, &_gameObjects);
     initInput(reconfigurationRequested);
-    initOutput(reconfigurationRequested, &huart1);
+    initOutput(reconfigurationRequested, &huart1, &_gameObjects);
   }
 
   if (reconfigurationRequested)
@@ -199,9 +202,6 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
-  _buttonWentDownSV = createSharedVariable(1, &_buttonWentDown);
-  _gameObjectsSV = createSharedVariable(1, &_gameObjects);
-  _uartReadySV = createSharedVariable(1, &_uartReady);
   enableSharedVariables();
   /* USER CODE END RTOS_SEMAPHORES */
 
