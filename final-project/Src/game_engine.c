@@ -78,6 +78,14 @@ void updateGlobalProjectiles(projectile* projectiles_t){
   }
 }
 
+void updateGlobalText(game_text* game_text){
+  for(int tidx = 0; tidx < NUM_PROJECTILES; tidx++){
+    game_text[tidx].enabled = local_text[tidx].enabled;
+    game_text[tidx].indentation = local_text[tidx].indentation;
+    strcpy(game_text[tidx].text, local_text[tidx].text);
+  }
+}
+
 void updateGlobalGameObjects(void *gameObjectsPtr)
 {
   game_objects *gameObjects = (game_objects*)gameObjectsPtr;
@@ -85,6 +93,7 @@ void updateGlobalGameObjects(void *gameObjectsPtr)
   updateGlobalUser(&gameObjects->user);
   updateGlobalEnemies(gameObjects->enemies);
   updateGlobalProjectiles(gameObjects->projectiles);
+  updateGlobalText(gameObjects->text);
 }
 
 /* Player functions -------------------------- */
