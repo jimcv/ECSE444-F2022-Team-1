@@ -159,8 +159,9 @@ void transmitBuffer()
  * @param str the string to write on screen
  * @return true if the text was successfully written to gameObjects
  */
-bool writeText(game_objects *gameObjects, int x, int y, char *str)
+bool writeText(uint32_t gameObjectsSV, int x, int y, char *str)
 {
+  game_objects *gameObjects = (game_objects*)gameObjectsSV;
   if (strlen(str) + x <= MAX_X &&
       x >= 0 && x <= MAX_X && // check bounds of x
       y >= 0 && y <= MAX_Y)   // check bounds of y
@@ -182,7 +183,8 @@ bool writeText(game_objects *gameObjects, int x, int y, char *str)
  * @param gameObjects game object
  * @param y the y-offset of the line to clear
  */
-void clearText(game_objects *gameObjects, int y)
+void clearText(uint32_t gameObjectsSV, int y)
 {
+  game_objects *gameObjects = (game_objects*)gameObjectsSV;
   gameObjects->text[y].enabled = false;
 }
