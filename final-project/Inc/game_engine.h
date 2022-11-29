@@ -15,7 +15,7 @@ enum entity { player, enemyUnit };  //0 is player and 1 is enemy
 
 /* Private Structs ------------------------- */
 typedef struct ENTITY {
-	int posit_x;
+	float posit_x;
 	int posit_y;
 	int health;
 	bool enabled;

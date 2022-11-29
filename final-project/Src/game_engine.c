@@ -53,14 +53,14 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
 //transfer data back to global variables
 void updateGlobalUser(user* user_t){
   user_t->enabled = playerChar.health > 0;
-  user_t->x = playerChar.posit_x;
+  user_t->x = round(playerChar.posit_x);
   user_t->y = playerChar.posit_y;
 }
 
 void updateGlobalEnemies(enemy* enemy_t){
   for(int eidx = 0; eidx < NUM_ENEMIES; eidx++){
     enemy_t[eidx].enabled = enemyList[eidx].enabled;
-    enemy_t[eidx].x = enemyList[eidx].posit_x;
+    enemy_t[eidx].x = round(enemyList[eidx].posit_x);
     enemy_t[eidx].y = enemyList[eidx].posit_y;
   }
 }
@@ -147,18 +147,18 @@ void createProjectile(int x, int y){
 
 /* Movement functions -------------------------- */
 void moveRight(entity_t *entity) {
-	if (entity->posit_x >= MAX_X - 1) {
+	if (round(entity->posit_x) >= MAX_X - 1) {
 		entity->posit_x = 0;
 	} else {
-		entity->posit_x++;
+		entity->posit_x+=0.5;
 	}
 }
 
 void moveLeft(entity_t *entity) {
-	if (entity->posit_x <= 0) {
+	if (round(entity->posit_x) <= 0) {
 		entity->posit_x = MAX_X - 1;
 	} else {
-		entity->posit_x--;
+		entity->posit_x-=0.5;
 	}
 
 }
@@ -168,7 +168,7 @@ void collisionDetection() {
 	for (int pidx = 0; pidx < NUM_PROJECTILES; pidx++) {
 		if (projectileList[pidx].enable == 1) {
 			for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
-				if (projectileList[pidx].posit_x == enemyList[eidx].posit_x
+				if (projectileList[pidx].posit_x == round(enemyList[eidx].posit_x)
 						&& projectileList[pidx].posit_y
 								== enemyList[eidx].posit_y) {
 					projectileList[pidx].enable = 0;
@@ -195,6 +195,7 @@ void enemyMove() {
 			if (enemyList[eidx].enabled) {
 				if (enemyList[eidx].posit_y < MAX_Y - 1) {
 					moveLeft(&enemyList[eidx]);
+					moveLeft(&enemyList[eidx]);
 				}
 			}
 		}
@@ -203,6 +204,7 @@ void enemyMove() {
 		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
 			if (enemyList[eidx].enabled) {
 				if (enemyList[eidx].posit_y < MAX_Y - 1) {
+					moveLeft(&enemyList[eidx]);
 					moveLeft(&enemyList[eidx]);
 				}
 			}
@@ -222,6 +224,7 @@ void enemyMove() {
 			if (enemyList[eidx].enabled) {
 				if (enemyList[eidx].posit_y < MAX_Y - 1) {
 					moveRight(&enemyList[eidx]);
+					moveRight(&enemyList[eidx]);
 				}
 			}
 		}
@@ -230,6 +233,7 @@ void enemyMove() {
 		for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
 			if (enemyList[eidx].enabled) {
 				if (enemyList[eidx].posit_y < MAX_Y - 1) {
+					moveRight(&enemyList[eidx]);
 					moveRight(&enemyList[eidx]);
 				}
 			}
@@ -280,10 +284,18 @@ void moveProjectiles() {
 
 /* Move Player ---------------------------------- */
 void movePlayer(float pEulerData){
-	if(pEulerData < -15){
+	if(pEulerData < -10 && pEulerData > -40){
 		moveLeft(&playerChar);
 	}
-	else if (pEulerData > 15) {
+	else if(pEulerData <= -40){
+		moveLeft(&playerChar);
+		moveLeft(&playerChar);
+	}
+	else if (pEulerData > 10 && pEulerData < 40) {
+		moveRight(&playerChar);
+	}
+	else if(pEulerData >= 40){
+		moveRight(&playerChar);
 		moveRight(&playerChar);
 	}
 }
@@ -312,7 +324,7 @@ uint32_t updateGame(uint32_t gameObjectsSV, bool fired, float pEulerData) {
 	moveProjectiles();
 	//fire projectile
 	if(fired){
-		createProjectile(playerChar.posit_x, playerChar.posit_y - 1);
+		createProjectile(round(playerChar.posit_x), playerChar.posit_y - 1);
 	}
 
 	//collision
