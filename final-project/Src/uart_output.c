@@ -161,7 +161,7 @@ void transmitBuffer()
  */
 bool writeText(uint32_t gameObjectsSV, int x, int y, char *str)
 {
-  game_objects *gameObjects = (game_objects*)gameObjectsSV;
+  game_objects *gameObjects = (game_objects*)lockSharedVariable(gameObjectsSV, OS_TIMEOUT);
   if (strlen(str) + x <= MAX_X &&
       x >= 0 && x <= MAX_X && // check bounds of x
       y >= 0 && y <= MAX_Y)   // check bounds of y
@@ -185,6 +185,6 @@ bool writeText(uint32_t gameObjectsSV, int x, int y, char *str)
  */
 void clearText(uint32_t gameObjectsSV, int y)
 {
-  game_objects *gameObjects = (game_objects*)gameObjectsSV;
+  game_objects *gameObjects = (game_objects*)lockSharedVariable(gameObjectsSV, OS_TIMEOUT);
   gameObjects->text[y].enabled = false;
 }
