@@ -62,7 +62,7 @@ void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart, game_o
   // disable all text initially
   for (uint32_t line = 0; line < MAX_Y; line++)
   {
-    clearText(game_objects, line);
+    clearText(game_objects->text, line);
   }
 }
 

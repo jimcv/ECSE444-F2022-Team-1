@@ -20,7 +20,7 @@ int numProjectiles = 0;
 entity_t enemyList[NUM_ENEMIES];
 entity_t playerChar;
 projectile_t projectileList[NUM_PROJECTILES];
-game_text *local_text;
+game_text local_text[MAX_X];
 
 /**
  * Initialize entities.
@@ -50,7 +50,7 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
   }
   for (uint32_t line = 0; line < MAX_Y; line++)
   {
-    clearText(&local_text, line);
+    clearText(local_text, line);
   }
 }
 
