@@ -30,7 +30,7 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
 {
   if (reconfigurationRequested)
   {
-    engineConfig.enemySteps = 60; //must be divisible by 6 because 6 states.
+    engineConfig.enemySteps = 120; //must be divisible by 6 because 6 states.
     engineConfig.maxEnemyHP = 3;
     engineConfig.maxPlayerHP = 5;
     setEngineConfiguration(&engineConfig);
@@ -300,6 +300,57 @@ void movePlayer(float pEulerData){
 	}
 }
 
+/* Spawn enemies -------------------------------- */
+void spawnEnemies() {
+	bool emptyTop = true;
+	int numMissingEnemy = 0;
+	for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
+		if (enemyList[eidx].posit_y == 1) {
+			emptyTop = false;
+		}
+		if (!enemyList[eidx].enabled) {
+			numMissingEnemy++;
+		}
+
+	}
+	if (emptyTop) {
+		int currEnemy = 0;
+		if (numMissingEnemy == 1) {
+			for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
+				if (!enemyList[eidx].enabled) {
+					entity_t thisEnemy;
+					int step = MAX_X / NUM_ENEMIES;
+					int start = step / 2;
+					thisEnemy.health = engineConfig.maxEnemyHP;
+					thisEnemy.type = enemyUnit;
+					int currEnemy = rand() % 5;
+					thisEnemy.posit_x = start + (currEnemy * step);
+					thisEnemy.posit_y = 1;
+					thisEnemy.enabled = true;
+					enemyList[eidx] = thisEnemy;
+					break;
+				}
+			}
+		} else {
+			for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
+				if (!enemyList[eidx].enabled) {
+					entity_t thisEnemy;
+					int step = MAX_X / numMissingEnemy;
+					int start = step / 2;
+					thisEnemy.health = engineConfig.maxEnemyHP;
+					thisEnemy.type = enemyUnit;
+					/*enemy starting position is set on row 10 side by side assumming they are only one ASCII character currently*/
+					thisEnemy.posit_x = start + (currEnemy * step);
+					thisEnemy.posit_y = 1;
+					thisEnemy.enabled = true;
+					enemyList[eidx] = thisEnemy;
+					currEnemy++;
+				}
+			}
+		}
+	}
+}
+
 /* End game ------------------------------------- */
 int gameEnd(){
 	int gameOver = 0;
@@ -334,7 +385,8 @@ uint32_t updateGame(uint32_t gameObjectsSV, bool fired, float pEulerData) {
 	enemyMove();
 	//check if enemy has reached bottom
 	enemyReached();
-
+	//spawn new enemies
+	spawnEnemies();
 	//gameover check
 	gameOver = gameEnd();
 
