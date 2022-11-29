@@ -9,6 +9,8 @@
 #define GAME_ENGINE_H_
 /* Private Includes ------------------------- */
 #include "main.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 /* Private enums ------------------------- */
 enum entity { player, enemyUnit };  //0 is player and 1 is enemy
