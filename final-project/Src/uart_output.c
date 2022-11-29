@@ -18,7 +18,7 @@ uint8_t _buf[2 * MAX_BUF_SIZE];
  * @param whether to reconfigure.
  * @param huart the UART handle.
  */
-void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart)
+void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart, game_objects *game_objects)
 {
   if (reconfigurationRequested)
   {
@@ -58,6 +58,12 @@ void initOutput(bool reconfigurationRequested, UART_HandleTypeDef *huart)
 
   // set clear buffer
   memset(_buf, '\b', _n);
+
+  // disable all text initially
+  for (uint32_t line = 0; line < MAX_Y; line++)
+  {
+    clearText(game_objects->text, line);
+  }
 }
 
 /**
@@ -70,6 +76,7 @@ void writeBuffer(void *gameObjectsPtr)
   user user = gameObjects->user;
   enemy *enemies = gameObjects->enemies;
   projectile *projectiles = gameObjects->projectiles;
+  game_text *text = gameObjects->text;
 
   // clear objects from buffer
   for (int i = _n; i < 2 * _n; i++) {
@@ -104,6 +111,23 @@ void writeBuffer(void *gameObjectsPtr)
       _buf[x + y * SCR_WIDTH + _n] = outputConfig.projectile;
     }
   }
+
+  // draw text
+  for (int i = 0; i < MAX_Y; i++)
+  {
+    if (text[i].enabled)
+    {
+      x = text[i].indentation + 1;
+      for (int c = 0; c < MAX_X; c++)
+      {
+        if (text[i].text[c] == '\0')
+        {
+          break;
+        }
+        _buf[x + c + (i + 1) * SCR_WIDTH + _n] = text[i].text[c];
+      }
+    }
+  }
 }
 
 /**
@@ -123,3 +147,42 @@ void transmitBuffer()
   hal_exec(HAL_UART_Transmit_DMA(_huart, _buf, 2 * _n));
 }
 
+/**
+ * Helper function for writing text on screen
+ *
+ * Note: (x, y) = (0, 0) will write the string in the top-left
+ * corner of the playing field
+ *
+ * @param gameObjects game object
+ * @param x the x-offset of the leftmost character of the text
+ * @param y the y-offset of the leftmost character of the text
+ * @param str the string to write on screen
+ * @return true if the text was successfully written to gameObjects
+ */
+bool writeText(game_text *text, int x, int y, char *str)
+{
+  if (strlen(str) + x <= MAX_X &&
+      x >= 0 && x <= MAX_X && // check bounds of x
+      y >= 0 && y <= MAX_Y)   // check bounds of y
+  {
+    text[y].enabled = true;
+    text[y].indentation = x;
+    strcpy(text[y].text, str);
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Helper function for clearing text on screen
+ *
+ * Note: (x, y) = (0, 0) will write the string in the top-left
+ * corner of the playing field
+ *
+ * @param gameObjects game object
+ * @param y the y-offset of the line to clear
+ */
+void clearText(game_text *text, int y)
+{
+  text[y].enabled = false;
+}

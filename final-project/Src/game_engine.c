@@ -20,6 +20,7 @@ int numProjectiles = 0;
 entity_t enemyList[NUM_ENEMIES];
 entity_t playerChar;
 projectile_t projectileList[NUM_PROJECTILES];
+game_text local_text[MAX_Y];
 
 /**
  * Initialize entities.
@@ -47,6 +48,10 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
     projectileList[i].enable = false;
     gameObjects->projectiles[i].enabled = false;
   }
+  for (uint32_t line = 0; line < MAX_Y; line++)
+  {
+    clearText(local_text, line);
+  }
 }
 
 /* Transfer functions ---------------------- */
@@ -73,6 +78,14 @@ void updateGlobalProjectiles(projectile* projectiles_t){
   }
 }
 
+void updateGlobalText(game_text* game_text){
+  for(int tidx = 0; tidx < MAX_Y; tidx++){
+    game_text[tidx].enabled = local_text[tidx].enabled;
+    game_text[tidx].indentation = local_text[tidx].indentation;
+    strcpy(game_text[tidx].text, local_text[tidx].text);
+  }
+}
+
 void updateGlobalGameObjects(void *gameObjectsPtr)
 {
   game_objects *gameObjects = (game_objects*)gameObjectsPtr;
@@ -80,6 +93,7 @@ void updateGlobalGameObjects(void *gameObjectsPtr)
   updateGlobalUser(&gameObjects->user);
   updateGlobalEnemies(gameObjects->enemies);
   updateGlobalProjectiles(gameObjects->projectiles);
+  updateGlobalText(gameObjects->text);
 }
 
 /* Player functions -------------------------- */
