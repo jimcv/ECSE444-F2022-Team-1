@@ -33,7 +33,7 @@ void transmitBuffer();
  * @param str the string to write on screen
  * @return true if the text was successfully written to gameObjects
  */
-bool writeText(uint32_t gameObjectsSV, int x, int y, char *str);
+bool writeText(game_text *text, int x, int y, char *str);
 
 /**
  * Helper function for clearing text on screen
@@ -44,6 +44,6 @@ bool writeText(uint32_t gameObjectsSV, int x, int y, char *str);
  * @param gameObjects game object
  * @param y the y-offset of the line to clear
  */
-void clearText(uint32_t gameObjectsSV, int y);
+void clearText(game_text *text, int y);
 
 #endif // __UART_OUTPUT_H
