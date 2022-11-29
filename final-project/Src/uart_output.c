@@ -159,17 +159,15 @@ void transmitBuffer()
  * @param str the string to write on screen
  * @return true if the text was successfully written to gameObjects
  */
-bool writeText(uint32_t gameObjectsSV, int x, int y, char *str)
+bool writeText(game_text *text, int x, int y, char *str)
 {
   if (strlen(str) + x <= MAX_X &&
       x >= 0 && x <= MAX_X && // check bounds of x
       y >= 0 && y <= MAX_Y)   // check bounds of y
   {
-    game_objects *gameObjects = (game_objects*)lockSharedVariable(gameObjectsSV, OS_TIMEOUT);
-    gameObjects->text[y].enabled = true;
-    gameObjects->text[y].indentation = x;
-    strcpy(gameObjects->text[y].text, str);
-    releaseSharedVariable(gameObjectsSV);
+    text[y].enabled = true;
+    text[y].indentation = x;
+    strcpy(text[y].text, str);
     return true;
   }
   return false;
@@ -184,9 +182,7 @@ bool writeText(uint32_t gameObjectsSV, int x, int y, char *str)
  * @param gameObjects game object
  * @param y the y-offset of the line to clear
  */
-void clearText(uint32_t gameObjectsSV, int y)
+void clearText(game_text *text, int y)
 {
-  game_objects *gameObjects = (game_objects*)lockSharedVariable(gameObjectsSV, OS_TIMEOUT);
-  gameObjects->text[y].enabled = false;
-  releaseSharedVariable(gameObjectsSV);
+  text[y].enabled = false;
 }
