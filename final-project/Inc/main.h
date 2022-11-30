@@ -110,6 +110,8 @@ extern const MODE mode;
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 #define ARRAY_LEN(a) sizeof(a) / sizeof(a[0])
+#define MIN(a, b) a < b ? a : b
+#define MAX(a, b) a > b ? a : b
 
 #define IS_MODE_RTOS()    mode & MODE_RTOS
 #define IS_MODE_INPUT()   mode & MODE_TEST_INPUT
