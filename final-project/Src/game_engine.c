@@ -386,11 +386,10 @@ int gameEnd()
     writeText(local_text, -1, baseline++, "Game over");
 
     char buf[10] = "Score: 00";
-    score = MIN(score, 99);
-    buf[8] = '0' + (score % 10);
-    buf[7] = '0' + (score / 10);
+    writeNumber(buf, 7, MIN(score, 99), 2);
     writeText(local_text, -1, baseline++, buf);
 
+    // prompt to restart
     ++baseline;
     writeText(local_text, -1, baseline++, "Press the black");
     writeText(local_text, -1, baseline++, "button to play");
@@ -435,13 +434,10 @@ uint32_t updateGame(uint32_t gameObjectsSV, bool fired, float pEulerData) {
 	}
 
 	// write score and health
-  char buf[6] = "00/00";
-  score = MIN(score, 99);
-  buf[4] = '0' + (score % 10);
-  buf[3] = '0' + (score / 10);
-  buf[1] = '0' + (playerChar.health % 10);
-  buf[0] = '0' + (playerChar.health / 10);
-  writeText(local_text, 0, 0, buf);
+	char buf[6] = "00/00";
+	writeNumber(buf, 0, playerChar.health, 2);
+	writeNumber(buf, 3, MIN(score, 99), 2);
+	writeText(local_text, 0, 0, buf);
 
 	//update global data
 	lockSharedVariableAndExecute(gameObjectsSV, OS_TIMEOUT, updateGlobalGameObjects);
