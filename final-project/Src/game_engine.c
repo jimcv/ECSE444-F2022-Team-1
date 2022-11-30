@@ -36,6 +36,8 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
     engineConfig.enemySteps = 20 * 6; //must be divisible by 6 because 6 states.
     engineConfig.maxEnemyHP = 3;
     engineConfig.maxPlayerHP = 5;
+    // clear scoreboard
+    memset(engineConfig.leaderboard, 0, LEADERBOARD_SIZE * sizeof(uint32_t));
     setEngineConfiguration(&engineConfig);
   }
   else
@@ -381,7 +383,26 @@ int gameEnd()
 
   if (gameOver)
   {
-    // write some text to the screen
+    // put in leaderboard
+    uint32_t curScore = score;
+    bool leaderboardUpdate = false;
+    for (uint32_t i = 0; i < LEADERBOARD_SIZE; ++i)
+    {
+      if (curScore >= engineConfig.leaderboard[i])
+      {
+        uint32_t tmp = engineConfig.leaderboard[i];
+        engineConfig.leaderboard[i] = curScore;
+        curScore = tmp;
+        leaderboardUpdate = true;
+      }
+    }
+    if (leaderboardUpdate)
+    {
+      setEngineConfiguration(&engineConfig);
+      writeConfiguration();
+    }
+
+    // write game over text to the screen
     int baseline = MAX_Y / 2 - 3;
     writeText(local_text, -1, baseline++, "Game over");
 
@@ -394,6 +415,17 @@ int gameEnd()
     writeText(local_text, -1, baseline++, "Press the black");
     writeText(local_text, -1, baseline++, "button to play");
     writeText(local_text, -1, baseline++, "again");
+
+    // write leaderboard
+    ++baseline;
+    writeText(local_text, -1, baseline++, "Leaderboard:");
+    for (int i = 0; i < LEADERBOARD_SIZE; ++i)
+    {
+      char scoreBuf[5] = "0) 00";
+      writeNumber(scoreBuf, 0, i + 1, 1);
+      writeNumber(scoreBuf, 3, MIN(engineConfig.leaderboard[i], 99), 2);
+      writeText(local_text, -1, baseline++, scoreBuf);
+    }
   }
 
   return gameOver;
