@@ -181,17 +181,22 @@ void writeNumber(char *str, int i, int num, int digits)
  */
 bool writeText(game_text *text, int x, int y, char *str)
 {
+  int n = strlen(str);
   if (x == -1)
   {
-    x = (MAX_X - strlen(str)) / 2;
+    x = (MAX_X - n) / 2;
   }
 
-  if (x >= 0 && x <= MAX_X && // check bounds of x
-      y >= 0 && y <= MAX_Y)   // check bounds of y
+  if (x >= 0 && x < MAX_X && // check bounds of x
+      y >= 0 && y < MAX_Y)   // check bounds of y
   {
+    n = MIN(n, MAX_X - x - 1);
+
     text[y].enabled = true;
     text[y].indentation = x;
-    strcpy(text[y].text, str);
+    // copy string
+    memcpy(text[y].text, str, n);
+    text[y].text[n] = 0;
     return true;
   }
   return false;

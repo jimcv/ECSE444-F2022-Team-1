@@ -8,6 +8,7 @@
 /* Private Includes ------------------------ */
 #include "game_engine.h"
 #include "flash_config.h"
+#include "uart_output.h"
 
 /* Private Variable ------------------------ */
 // configuration model
@@ -61,33 +62,45 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
 
 /* Transfer functions ---------------------- */
 //transfer data back to global variables
-void updateGlobalUser(user* user_t){
+void updateGlobalUser(user* user_t)
+{
   user_t->enabled = playerChar.health > 0;
   user_t->x = round(playerChar.posit_x);
   user_t->y = playerChar.posit_y;
 }
 
-void updateGlobalEnemies(enemy* enemy_t){
-  for(int eidx = 0; eidx < NUM_ENEMIES; eidx++){
+void updateGlobalEnemies(enemy* enemy_t)
+{
+  for(int eidx = 0; eidx < NUM_ENEMIES; eidx++)
+  {
     enemy_t[eidx].enabled = enemyList[eidx].enabled;
     enemy_t[eidx].x = round(enemyList[eidx].posit_x);
     enemy_t[eidx].y = enemyList[eidx].posit_y;
   }
 }
 
-void updateGlobalProjectiles(projectile* projectiles_t){
-  for(int pidx = 0; pidx < NUM_PROJECTILES; pidx++){
+void updateGlobalProjectiles(projectile* projectiles_t)
+{
+  for(int pidx = 0; pidx < NUM_PROJECTILES; pidx++)
+  {
     projectiles_t[pidx].enabled = projectileList[pidx].enable;
     projectiles_t[pidx].x = projectileList[pidx].posit_x;
     projectiles_t[pidx].y = projectileList[pidx].posit_y;
   }
 }
 
-void updateGlobalText(game_text* game_text){
-  for(int tidx = 0; tidx < MAX_Y; tidx++){
-    game_text[tidx].enabled = local_text[tidx].enabled;
-    game_text[tidx].indentation = local_text[tidx].indentation;
-    strcpy(game_text[tidx].text, local_text[tidx].text);
+void updateGlobalText(game_text* game_text)
+{
+  bool enabled = false;
+  for(int tidx = 0; tidx < MAX_Y; tidx++)
+  {
+    enabled = local_text[tidx].enabled;
+    if (enabled)
+    {
+      game_text[tidx].indentation = local_text[tidx].indentation;
+      strcpy(game_text[tidx].text, local_text[tidx].text);
+    }
+    game_text[tidx].enabled = enabled;
   }
 }
 
@@ -388,7 +401,7 @@ int gameEnd()
     bool leaderboardUpdate = false;
     for (uint32_t i = 0; i < LEADERBOARD_SIZE; ++i)
     {
-      if (curScore >= engineConfig.leaderboard[i])
+      if (curScore > engineConfig.leaderboard[i])
       {
         uint32_t tmp = engineConfig.leaderboard[i];
         engineConfig.leaderboard[i] = curScore;
@@ -403,7 +416,7 @@ int gameEnd()
     }
 
     // write game over text to the screen
-    int baseline = MAX_Y / 2 - 3;
+    int baseline = (MAX_Y - 11) / 2;
     writeText(local_text, -1, baseline++, "Game over");
 
     char buf[10] = "Score: 00";
@@ -421,7 +434,7 @@ int gameEnd()
     writeText(local_text, -1, baseline++, "Leaderboard:");
     for (int i = 0; i < LEADERBOARD_SIZE; ++i)
     {
-      char scoreBuf[5] = "0) 00";
+      char scoreBuf[6] = "0) 00";
       writeNumber(scoreBuf, 0, i + 1, 1);
       writeNumber(scoreBuf, 3, MIN(engineConfig.leaderboard[i], 99), 2);
       writeText(local_text, -1, baseline++, scoreBuf);
