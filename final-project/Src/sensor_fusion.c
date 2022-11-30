@@ -65,7 +65,7 @@ void initInput(bool reconfigurationRequested)
   if (reconfigurationRequested)
   {
     // delay to prevent button bounce that affects sensor calibration
-    HAL_Delay(500);
+    delay(500);
 
     fusion_init(true, 0);
 
@@ -97,7 +97,7 @@ void fusion_calibrate_gyro()
 	// measure
 	for (uint16_t i = 0; i < num_samples; i++)
 	{
-		HAL_Delay(10); // approx. 100 Hz
+		delay(10); // approx. 100 Hz
 		LSM6_read_gyro(buffer);
 		gyro_x[i] = buffer[0];
 		gyro_y[i] = buffer[1];
@@ -150,7 +150,7 @@ void fusion_init(bool doCalibrate, int useMagnetometer)
 		beta = 10.0f;
 		for (uint32_t i = 0; i < 100; i++)
 		{
-			HAL_Delay(10);
+			delay(10);
 			fusion_update();
 		}
 		beta = oldBeta;
