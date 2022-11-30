@@ -33,7 +33,7 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
 {
   if (reconfigurationRequested)
   {
-    engineConfig.enemySteps = 120; //must be divisible by 6 because 6 states.
+    engineConfig.enemySteps = 20 * 6; //must be divisible by 6 because 6 states.
     engineConfig.maxEnemyHP = 3;
     engineConfig.maxPlayerHP = 5;
     setEngineConfiguration(&engineConfig);
@@ -43,6 +43,7 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
     getEngineConfiguration(&engineConfig);
   }
 
+  // create global objects
   createPlayer(&gameObjects->user);
   createEnemies(gameObjects->enemies);
   for (uint32_t i = 0; i < NUM_PROJECTILES; ++i)
@@ -369,12 +370,34 @@ void spawnEnemies() {
 }
 
 /* End game ------------------------------------- */
-int gameEnd(){
-	int gameOver = 0;
-	if(playerChar.health <= 0){
-		gameOver = 1;
-	}
-	return gameOver;
+bool isGameOver()
+{
+  return playerChar.health <= 0;
+}
+
+int gameEnd()
+{
+  int gameOver = isGameOver() ? 1 : 0;
+
+  if (gameOver)
+  {
+    // write some text to the screen
+    int baseline = MAX_Y / 2 - 3;
+    writeText(local_text, -1, baseline++, "Game over");
+
+    char buf[10] = "Score: 00";
+    score = MIN(score, 99);
+    buf[8] = '0' + (score % 10);
+    buf[7] = '0' + (score / 10);
+    writeText(local_text, -1, baseline++, buf);
+
+    ++baseline;
+    writeText(local_text, -1, baseline++, "Press the black");
+    writeText(local_text, -1, baseline++, "button to play");
+    writeText(local_text, -1, baseline++, "again");
+  }
+
+  return gameOver;
 }
 
 /**
@@ -388,24 +411,28 @@ uint32_t updateGame(uint32_t gameObjectsSV, bool fired, float pEulerData) {
 
 	//player move
 	movePlayer(pEulerData);
-	//projectile move
-	moveProjectiles();
-	//fire projectile
-	if(fired){
-		createProjectile(round(playerChar.posit_x), playerChar.posit_y - 1);
+
+	if (!isGameOver())
+	{
+	  //projectile move
+    moveProjectiles();
+    //fire projectile
+    if(fired){
+      createProjectile(round(playerChar.posit_x), playerChar.posit_y - 1);
+    }
+
+    //collision
+    collisionDetection();
+
+    //enemy move
+    enemyMove();
+    //check if enemy has reached bottom
+    enemyReached();
+    //spawn new enemies
+    spawnEnemies();
+    //gameover check
+    gameOver = gameEnd();
 	}
-
-	//collision
-	collisionDetection();
-
-	//enemy move
-	enemyMove();
-	//check if enemy has reached bottom
-	enemyReached();
-	//spawn new enemies
-	spawnEnemies();
-	//gameover check
-	gameOver = gameEnd();
 
 	// write score and health
   char buf[6] = "00/00";

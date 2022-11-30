@@ -28,7 +28,7 @@ void transmitBuffer();
  * corner of the playing field
  *
  * @param gameObjects game object
- * @param x the x-offset of the leftmost character of the text
+ * @param x the x-offset of the leftmost character of the text, -1 to center.
  * @param y the y-offset of the leftmost character of the text
  * @param str the string to write on screen
  * @return true if the text was successfully written to gameObjects
