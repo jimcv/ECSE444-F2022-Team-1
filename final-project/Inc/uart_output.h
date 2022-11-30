@@ -22,6 +22,16 @@ void updateBuffer(uint32_t gameObjectsSV);
 void transmitBuffer();
 
 /**
+ * Helper function to write a number in a string without sprintf.
+ *
+ * @param str the string to write in.
+ * @param i the character where the number should start.
+ * @param num the number to write.
+ * @param digits the number of digits to include.
+ */
+void writeNumber(char *str, int i, int num, int digits);
+
+/**
  * Helper function for writing text on screen
  *
  * Note: (x, y) = (0, 0) will write the string in the top-left
