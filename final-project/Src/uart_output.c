@@ -90,17 +90,6 @@ void writeBuffer(void *gameObjectsPtr)
   int32_t y = user.y + 1; // add one to offset from border
   _buf[x + y * SCR_WIDTH + _n] = outputConfig.user;
 
-  // draw enemies
-  for (int i = 0; i < NUM_ENEMIES; i++)
-  {
-    if (enemies[i].enabled)
-    {
-      x = enemies[i].x + 1;
-      y = enemies[i].y + 1;
-      _buf[x + y * SCR_WIDTH + _n] = outputConfig.enemy;
-    }
-  }
-
   // draw projectiles
   for (int i = 0; i < NUM_PROJECTILES; i++)
   {
@@ -109,6 +98,17 @@ void writeBuffer(void *gameObjectsPtr)
       x = projectiles[i].x + 1;
       y = projectiles[i].y + 1;
       _buf[x + y * SCR_WIDTH + _n] = outputConfig.projectile;
+    }
+  }
+
+  // draw enemies
+  for (int i = 0; i < NUM_ENEMIES; i++)
+  {
+    if (enemies[i].enabled)
+    {
+      x = enemies[i].x + 1;
+      y = enemies[i].y + 1;
+      _buf[x + y * SCR_WIDTH + _n] = outputConfig.enemy;
     }
   }
 
@@ -154,15 +154,19 @@ void transmitBuffer()
  * corner of the playing field
  *
  * @param gameObjects game object
- * @param x the x-offset of the leftmost character of the text
+ * @param x the x-offset of the leftmost character of the text, -1 to center.
  * @param y the y-offset of the leftmost character of the text
  * @param str the string to write on screen
  * @return true if the text was successfully written to gameObjects
  */
 bool writeText(game_text *text, int x, int y, char *str)
 {
-  if (strlen(str) + x <= MAX_X &&
-      x >= 0 && x <= MAX_X && // check bounds of x
+  if (x == -1)
+  {
+    x = (MAX_X - strlen(str)) / 2;
+  }
+
+  if (x >= 0 && x <= MAX_X && // check bounds of x
       y >= 0 && y <= MAX_Y)   // check bounds of y
   {
     text[y].enabled = true;
