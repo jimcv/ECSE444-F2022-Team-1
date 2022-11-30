@@ -2,12 +2,6 @@
 #include "main.h"
 
 #include <stdlib.h>
-/*
- * MX25R6435F_FLASH_SIZE
- * MX25R6435F_BLOCK_SIZE
- */
-
-#define MIN(n, m) n <= m ? n : m
 
 // global configuration variable
 configuration _config;
