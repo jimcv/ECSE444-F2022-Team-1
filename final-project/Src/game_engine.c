@@ -13,6 +13,8 @@
 // configuration model
 engine_configuration engineConfig;
 
+int score = 0;
+
 //enemy
 int enemyState = 0;
 int numProjectiles = 0;
@@ -193,6 +195,7 @@ void collisionDetection() {
 					}
 					if(enemyList[eidx].health <= 0){
 						enemyList[eidx].enabled = false;
+						score++;
 					}
 					break;
 				}
@@ -403,6 +406,15 @@ uint32_t updateGame(uint32_t gameObjectsSV, bool fired, float pEulerData) {
 	spawnEnemies();
 	//gameover check
 	gameOver = gameEnd();
+
+	// write score and health
+  char buf[6] = "00/00";
+  score = MIN(score, 99);
+  buf[4] = '0' + (score % 10);
+  buf[3] = '0' + (score / 10);
+  buf[1] = '0' + (playerChar.health % 10);
+  buf[0] = '0' + (playerChar.health / 10);
+  writeText(local_text, 0, 0, buf);
 
 	//update global data
 	lockSharedVariableAndExecute(gameObjectsSV, OS_TIMEOUT, updateGlobalGameObjects);
