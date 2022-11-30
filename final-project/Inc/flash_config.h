@@ -12,6 +12,7 @@ typedef struct __engine_configuration
   uint32_t maxPlayerHP;
   uint32_t maxEnemyHP;
   uint32_t enemySteps;
+  uint32_t leaderboard[LEADERBOARD_SIZE];
 } engine_configuration;
 
 // I2C configuration model.
@@ -31,7 +32,7 @@ typedef struct __output_configuration
 } output_configuration;
 
 // Main configuration model to read from flash.
-#define MAGIC_NUMBER 1783320124
+#define MAGIC_NUMBER 1783320125
 typedef struct __configuration
 {
   // Magic number to identify valid configuration.

@@ -175,6 +175,11 @@ void led_red_off();
 #define NUM_SEMAPHORES 32
 
 // ================
+// ENGINE DEFINES
+// ================
+#define LEADERBOARD_SIZE 3
+
+// ================
 // OUTPUT DEFINES
 // ================
 #define UART_TIMEOUT 30000
