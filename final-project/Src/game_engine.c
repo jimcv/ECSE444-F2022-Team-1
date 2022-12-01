@@ -339,12 +339,13 @@ void spawnEnemies() {
 	int numMissingEnemy = 0;
 	for (int eidx = 0; eidx < NUM_ENEMIES; eidx++) {
 		if (enemyList[eidx].posit_y == 1) {
-			emptyTop = false;
+			if (enemyList[eidx].enabled) {
+				emptyTop = false;
+			}
 		}
 		if (!enemyList[eidx].enabled) {
 			numMissingEnemy++;
 		}
-
 	}
 	if (emptyTop) {
 		int currEnemy = 0;
