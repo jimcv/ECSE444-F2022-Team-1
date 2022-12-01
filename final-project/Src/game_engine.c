@@ -8,10 +8,13 @@
 /* Private Includes ------------------------ */
 #include "game_engine.h"
 #include "flash_config.h"
+#include "uart_output.h"
 
 /* Private Variable ------------------------ */
 // configuration model
 engine_configuration engineConfig;
+
+int score = 0;
 
 //enemy
 int enemyState = 0;
@@ -31,9 +34,11 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
 {
   if (reconfigurationRequested)
   {
-    engineConfig.enemySteps = 120; //must be divisible by 6 because 6 states.
+    engineConfig.enemySteps = 20 * 6; //must be divisible by 6 because 6 states.
     engineConfig.maxEnemyHP = 3;
     engineConfig.maxPlayerHP = 5;
+    // clear scoreboard
+    memset(engineConfig.leaderboard, 0, LEADERBOARD_SIZE * sizeof(uint32_t));
     setEngineConfiguration(&engineConfig);
   }
   else
@@ -41,6 +46,7 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
     getEngineConfiguration(&engineConfig);
   }
 
+  // create global objects
   createPlayer(&gameObjects->user);
   createEnemies(gameObjects->enemies);
   for (uint32_t i = 0; i < NUM_PROJECTILES; ++i)
@@ -56,33 +62,45 @@ void initEngine(bool reconfigurationRequested, game_objects *gameObjects)
 
 /* Transfer functions ---------------------- */
 //transfer data back to global variables
-void updateGlobalUser(user* user_t){
+void updateGlobalUser(user* user_t)
+{
   user_t->enabled = playerChar.health > 0;
   user_t->x = round(playerChar.posit_x);
   user_t->y = playerChar.posit_y;
 }
 
-void updateGlobalEnemies(enemy* enemy_t){
-  for(int eidx = 0; eidx < NUM_ENEMIES; eidx++){
+void updateGlobalEnemies(enemy* enemy_t)
+{
+  for(int eidx = 0; eidx < NUM_ENEMIES; eidx++)
+  {
     enemy_t[eidx].enabled = enemyList[eidx].enabled;
     enemy_t[eidx].x = round(enemyList[eidx].posit_x);
     enemy_t[eidx].y = enemyList[eidx].posit_y;
   }
 }
 
-void updateGlobalProjectiles(projectile* projectiles_t){
-  for(int pidx = 0; pidx < NUM_PROJECTILES; pidx++){
+void updateGlobalProjectiles(projectile* projectiles_t)
+{
+  for(int pidx = 0; pidx < NUM_PROJECTILES; pidx++)
+  {
     projectiles_t[pidx].enabled = projectileList[pidx].enable;
     projectiles_t[pidx].x = projectileList[pidx].posit_x;
     projectiles_t[pidx].y = projectileList[pidx].posit_y;
   }
 }
 
-void updateGlobalText(game_text* game_text){
-  for(int tidx = 0; tidx < MAX_Y; tidx++){
-    game_text[tidx].enabled = local_text[tidx].enabled;
-    game_text[tidx].indentation = local_text[tidx].indentation;
-    strcpy(game_text[tidx].text, local_text[tidx].text);
+void updateGlobalText(game_text* game_text)
+{
+  bool enabled = false;
+  for(int tidx = 0; tidx < MAX_Y; tidx++)
+  {
+    enabled = local_text[tidx].enabled;
+    if (enabled)
+    {
+      game_text[tidx].indentation = local_text[tidx].indentation;
+      strcpy(game_text[tidx].text, local_text[tidx].text);
+    }
+    game_text[tidx].enabled = enabled;
   }
 }
 
@@ -193,6 +211,7 @@ void collisionDetection() {
 					}
 					if(enemyList[eidx].health <= 0){
 						enemyList[eidx].enabled = false;
+						score++;
 					}
 					break;
 				}
@@ -366,12 +385,63 @@ void spawnEnemies() {
 }
 
 /* End game ------------------------------------- */
-int gameEnd(){
-	int gameOver = 0;
-	if(playerChar.health <= 0){
-		gameOver = 1;
-	}
-	return gameOver;
+bool isGameOver()
+{
+  return playerChar.health <= 0;
+}
+
+int gameEnd()
+{
+  int gameOver = isGameOver() ? 1 : 0;
+
+  if (gameOver)
+  {
+    // put in leaderboard
+    uint32_t curScore = score;
+    bool leaderboardUpdate = false;
+    for (uint32_t i = 0; i < LEADERBOARD_SIZE; ++i)
+    {
+      if (curScore > engineConfig.leaderboard[i])
+      {
+        uint32_t tmp = engineConfig.leaderboard[i];
+        engineConfig.leaderboard[i] = curScore;
+        curScore = tmp;
+        leaderboardUpdate = true;
+      }
+    }
+    if (leaderboardUpdate)
+    {
+      setEngineConfiguration(&engineConfig);
+      writeConfiguration();
+    }
+
+    // write game over text to the screen
+    int baseline = (MAX_Y - 11) / 2;
+    writeText(local_text, -1, baseline++, "Game over");
+
+    char buf[10] = "Score: 00";
+    writeNumber(buf, 7, MIN(score, 99), 2);
+    writeText(local_text, -1, baseline++, buf);
+
+    // prompt to restart
+    ++baseline;
+    writeText(local_text, -1, baseline++, "Press the black");
+    writeText(local_text, -1, baseline++, "button to play");
+    writeText(local_text, -1, baseline++, "again");
+
+    // write leaderboard
+    ++baseline;
+    writeText(local_text, -1, baseline++, "Leaderboard:");
+    for (int i = 0; i < LEADERBOARD_SIZE; ++i)
+    {
+      char scoreBuf[6] = "0) 00";
+      writeNumber(scoreBuf, 0, i + 1, 1);
+      writeNumber(scoreBuf, 3, MIN(engineConfig.leaderboard[i], 99), 2);
+      writeText(local_text, -1, baseline++, scoreBuf);
+    }
+  }
+
+  return gameOver;
 }
 
 /**
@@ -385,24 +455,34 @@ uint32_t updateGame(uint32_t gameObjectsSV, bool fired, float pEulerData) {
 
 	//player move
 	movePlayer(pEulerData);
-	//projectile move
-	moveProjectiles();
-	//fire projectile
-	if(fired){
-		createProjectile(round(playerChar.posit_x), playerChar.posit_y - 1);
+
+	if (!isGameOver())
+	{
+	  //projectile move
+    moveProjectiles();
+    //fire projectile
+    if(fired){
+      createProjectile(round(playerChar.posit_x), playerChar.posit_y - 1);
+    }
+
+    //collision
+    collisionDetection();
+
+    //enemy move
+    enemyMove();
+    //check if enemy has reached bottom
+    enemyReached();
+    //spawn new enemies
+    spawnEnemies();
+    //gameover check
+    gameOver = gameEnd();
 	}
 
-	//collision
-	collisionDetection();
-
-	//enemy move
-	enemyMove();
-	//check if enemy has reached bottom
-	enemyReached();
-	//spawn new enemies
-	spawnEnemies();
-	//gameover check
-	gameOver = gameEnd();
+	// write score and health
+	char buf[6] = "00/00";
+	writeNumber(buf, 0, playerChar.health, 2);
+	writeNumber(buf, 3, MIN(score, 99), 2);
+	writeText(local_text, 0, 0, buf);
 
 	//update global data
 	lockSharedVariableAndExecute(gameObjectsSV, OS_TIMEOUT, updateGlobalGameObjects);
