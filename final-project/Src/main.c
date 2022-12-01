@@ -32,6 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define ITM_Port32(n) (*((volatile unsigned long *) (0xE0000000+4*n)))  // ITM base addr (see Cortex-M4 manual p.93)
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -686,7 +687,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM3)
 	{
 		// TIM3 interrupt
+		ITM_Port32(31) = 1;
 		fusion_update();
+		ITM_Port32(31) = 2;
 		fusion_get_euler(euler, 0);
 		buf_len = snprintf(buf, sizeof(buf), "X: %8d  Y: %8d  Z: %8d\n", (int)euler[0], (int)euler[1], (int)euler[2]);
 		HAL_UART_Transmit(&huart1, (uint8_t *)buf, buf_len, 10);
