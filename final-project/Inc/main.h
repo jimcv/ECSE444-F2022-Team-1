@@ -67,7 +67,7 @@ typedef rigid_body projectile;
 
 // Model to store text to display on screen
 #define MAX_X 20
-#define MAX_Y 15
+#define MAX_Y 16
 typedef struct __game_text
 {
   // whether to draw the text
