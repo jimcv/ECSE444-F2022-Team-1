@@ -46,6 +46,7 @@ extern void asm_inv_sqrt(float *pIn, float *pOut);
 
 void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float az, float mx, float my, float mz) {
 	float recipNorm;
+	float temp;
 	float s0, s1, s2, s3;
 	float qDot1, qDot2, qDot3, qDot4;
 	float hx, hy;
@@ -67,13 +68,15 @@ void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float 
 	if(!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) {
 
 		// Normalise accelerometer measurement
-		recipNorm = invSqrt(ax * ax + ay * ay + az * az);
+		temp = ax * ax + ay * ay + az * az;
+		asm_inv_sqrt(&temp, &recipNorm);
 		ax *= recipNorm;
 		ay *= recipNorm;
 		az *= recipNorm;
 
 		// Normalise magnetometer measurement
-		recipNorm = invSqrt(mx * mx + my * my + mz * mz);
+		temp = mx * mx + my * my + mz * mz;
+		asm_inv_sqrt(&temp, &recipNorm);
 		mx *= recipNorm;
 		my *= recipNorm;
 		mz *= recipNorm;
@@ -113,7 +116,8 @@ void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float 
 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * q1 * (1 - 2.0f * q1q1 - 2.0f * q2q2 - az) + _2bz * q3 * (_2bx * (0.5f - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx) + (_2bx * q2 + _2bz * q0) * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my) + (_2bx * q3 - _4bz * q1) * (_2bx * (q0q2 + q1q3) + _2bz * (0.5f - q1q1 - q2q2) - mz);
 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * q2 * (1 - 2.0f * q1q1 - 2.0f * q2q2 - az) + (-_4bx * q2 - _2bz * q0) * (_2bx * (0.5f - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx) + (_2bx * q1 + _2bz * q3) * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my) + (_2bx * q0 - _4bz * q2) * (_2bx * (q0q2 + q1q3) + _2bz * (0.5f - q1q1 - q2q2) - mz);
 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * q3 + _2bz * q1) * (_2bx * (0.5f - q2q2 - q3q3) + _2bz * (q1q3 - q0q2) - mx) + (-_2bx * q0 + _2bz * q2) * (_2bx * (q1q2 - q0q3) + _2bz * (q0q1 + q2q3) - my) + _2bx * q1 * (_2bx * (q0q2 + q1q3) + _2bz * (0.5f - q1q1 - q2q2) - mz);
-		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+		temp = s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3;
+		asm_inv_sqrt(&temp, &recipNorm); // normalise step magnitude
 		s0 *= recipNorm;
 		s1 *= recipNorm;
 		s2 *= recipNorm;
@@ -133,7 +137,8 @@ void MadgwickAHRSupdate(float gx, float gy, float gz, float ax, float ay, float 
 	q3 += qDot4 * (1.0f / sampleFreq);
 
 	// Normalise quaternion
-	recipNorm = invSqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
+	temp = q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3;
+	asm_inv_sqrt(&temp, &recipNorm);
 	q0 *= recipNorm;
 	q1 *= recipNorm;
 	q2 *= recipNorm;
@@ -216,18 +221,6 @@ void MadgwickAHRSupdateIMU(float gx, float gy, float gz, float ax, float ay, flo
 }
 
 //---------------------------------------------------------------------------------------------------
-// Fast inverse square-root
-// See: http://en.wikipedia.org/wiki/Fast_inverse_square_root
-
-float invSqrt(float x) {
-	float halfx = 0.5f * x;
-	float y = x;
-	long i = *(long*)&y;
-	i = 0x5f3759df - (i>>1);
-	y = *(float*)&i;
-	y = y * (1.5f - (halfx * y * y));
-	return y;
-}
 
 //====================================================================================================
 // END OF CODE
