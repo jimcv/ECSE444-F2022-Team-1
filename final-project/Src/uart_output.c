@@ -90,17 +90,6 @@ void writeBuffer(void *gameObjectsPtr)
   int32_t y = user.y + 1; // add one to offset from border
   _buf[x + y * SCR_WIDTH + _n] = outputConfig.user;
 
-  // draw enemies
-  for (int i = 0; i < NUM_ENEMIES; i++)
-  {
-    if (enemies[i].enabled)
-    {
-      x = enemies[i].x + 1;
-      y = enemies[i].y + 1;
-      _buf[x + y * SCR_WIDTH + _n] = outputConfig.enemy;
-    }
-  }
-
   // draw projectiles
   for (int i = 0; i < NUM_PROJECTILES; i++)
   {
@@ -109,6 +98,17 @@ void writeBuffer(void *gameObjectsPtr)
       x = projectiles[i].x + 1;
       y = projectiles[i].y + 1;
       _buf[x + y * SCR_WIDTH + _n] = outputConfig.projectile;
+    }
+  }
+
+  // draw enemies
+  for (int i = 0; i < NUM_ENEMIES; i++)
+  {
+    if (enemies[i].enabled)
+    {
+      x = enemies[i].x + 1;
+      y = enemies[i].y + 1;
+      _buf[x + y * SCR_WIDTH + _n] = outputConfig.enemy;
     }
   }
 
@@ -148,26 +148,55 @@ void transmitBuffer()
 }
 
 /**
+ * Helper function to write a number in a string without sprintf.
+ *
+ * @param str the string to write in.
+ * @param i the character where the number should start.
+ * @param num the number to write.
+ * @param digits the number of digits to include.
+ */
+void writeNumber(char *str, int i, int num, int digits)
+{
+  int n = i + digits - 1;
+  while (n >= i)
+  {
+    str[n] = '0' + num % 10;
+
+    num /= 10;
+    --n;
+  }
+}
+
+/**
  * Helper function for writing text on screen
  *
  * Note: (x, y) = (0, 0) will write the string in the top-left
  * corner of the playing field
  *
  * @param gameObjects game object
- * @param x the x-offset of the leftmost character of the text
+ * @param x the x-offset of the leftmost character of the text, -1 to center.
  * @param y the y-offset of the leftmost character of the text
  * @param str the string to write on screen
  * @return true if the text was successfully written to gameObjects
  */
 bool writeText(game_text *text, int x, int y, char *str)
 {
-  if (strlen(str) + x <= MAX_X &&
-      x >= 0 && x <= MAX_X && // check bounds of x
-      y >= 0 && y <= MAX_Y)   // check bounds of y
+  int n = strlen(str);
+  if (x == -1)
   {
+    x = (MAX_X - n) / 2;
+  }
+
+  if (x >= 0 && x < MAX_X && // check bounds of x
+      y >= 0 && y < MAX_Y)   // check bounds of y
+  {
+    n = MIN(n, MAX_X - x - 1);
+
     text[y].enabled = true;
     text[y].indentation = x;
-    strcpy(text[y].text, str);
+    // copy string
+    memcpy(text[y].text, str, n);
+    text[y].text[n] = 0;
     return true;
   }
   return false;

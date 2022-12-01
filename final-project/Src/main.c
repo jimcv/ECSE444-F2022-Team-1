@@ -43,9 +43,6 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-DAC_HandleTypeDef hdac1;
-DMA_HandleTypeDef hdma_dac1_ch1;
-
 I2C_HandleTypeDef hi2c2;
 
 OSPI_HandleTypeDef hospi1;
@@ -81,7 +78,6 @@ static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_DAC1_Init(void);
 static void MX_OCTOSPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM3_Init(void);
@@ -131,7 +127,6 @@ int main(void)
   MX_DMA_Init();
   MX_I2C2_Init();
   MX_USART1_UART_Init();
-  MX_DAC1_Init();
   MX_OCTOSPI1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
@@ -290,50 +285,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-}
-
-/**
-  * @brief DAC1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_DAC1_Init(void)
-{
-
-  /* USER CODE BEGIN DAC1_Init 0 */
-
-  /* USER CODE END DAC1_Init 0 */
-
-  DAC_ChannelConfTypeDef sConfig = {0};
-
-  /* USER CODE BEGIN DAC1_Init 1 */
-
-  /* USER CODE END DAC1_Init 1 */
-
-  /** DAC Initialization
-  */
-  hdac1.Instance = DAC1;
-  if (HAL_DAC_Init(&hdac1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
-  /** DAC channel OUT1 config
-  */
-  sConfig.DAC_SampleAndHold = DAC_SAMPLEANDHOLD_DISABLE;
-  sConfig.DAC_Trigger = DAC_TRIGGER_T2_TRGO;
-  sConfig.DAC_HighFrequency = DAC_HIGH_FREQUENCY_INTERFACE_MODE_ABOVE_80MHZ;
-  sConfig.DAC_OutputBuffer = DAC_OUTPUTBUFFER_ENABLE;
-  sConfig.DAC_ConnectOnChipPeripheral = DAC_CHIPCONNECT_DISABLE;
-  sConfig.DAC_UserTrimming = DAC_TRIMMING_FACTORY;
-  if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN DAC1_Init 2 */
-
-  /* USER CODE END DAC1_Init 2 */
-
 }
 
 /**
@@ -510,7 +461,7 @@ static void MX_TIM3_Init(void)
   {
     Error_Handler();
   }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
   {
@@ -581,9 +532,6 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   /* DMA1_Channel2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel2_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_IRQn);
@@ -602,8 +550,8 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, GPIO_PIN_RESET);
