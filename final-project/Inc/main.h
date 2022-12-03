@@ -113,10 +113,11 @@ extern const MODE mode;
 #define MIN(a, b) a < b ? a : b
 #define MAX(a, b) a > b ? a : b
 
-#define IS_MODE_RTOS()    mode & MODE_RTOS
-#define IS_MODE_INPUT()   mode & MODE_TEST_INPUT
-#define IS_MODE_ENGINE()  mode & MODE_TEST_ENGINE
-#define IS_MODE_OUTPUT()  mode & MODE_TEST_OUTPUT
+#define IS_MODE_RTOS()      mode & MODE_RTOS
+#define IS_MODE_NON_RTOS()  mode & MODE_NON_RTOS
+#define IS_MODE_INPUT()     mode & MODE_TEST_INPUT
+#define IS_MODE_ENGINE()    mode & MODE_TEST_ENGINE
+#define IS_MODE_OUTPUT()    mode & MODE_TEST_OUTPUT
 
 // Debugging port
 #define ITM_Port32(n) (*((volatile unsigned long *) (0xE0000000+4*n)))
@@ -162,10 +163,11 @@ void led_red_off();
 // ================
 // MODE VARIABLES
 // ================
-#define MODE_RTOS         0b0001 // Release mode
-#define MODE_TEST_INPUT   0b0010 // Mode testing input sensors
-#define MODE_TEST_ENGINE  0b0100 // Mode testing engine
-#define MODE_TEST_OUTPUT  0b1000 // Mode testing output generation
+#define MODE_RTOS         0b00001 // Release mode
+#define MODE_TEST_INPUT   0b00010 // Mode testing input sensors
+#define MODE_TEST_ENGINE  0b00100 // Mode testing engine
+#define MODE_TEST_OUTPUT  0b01000 // Mode testing output generation
+#define MODE_NON_RTOS     0b10000 // Mode testing the integrated system without RTOS
 
 // ================
 // RTOS DEFINES
