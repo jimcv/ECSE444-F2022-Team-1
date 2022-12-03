@@ -149,7 +149,7 @@ int main(void)
   {
     initOutput(reconfigurationRequested, &huart1, &_gameObjects);
   }
-  else if (IS_MODE_RTOS())
+  else if (IS_MODE_RTOS() || IS_MODE_NON_RTOS())
   {
     initEngine(reconfigurationRequested, &_gameObjects);
     initInput(reconfigurationRequested);
@@ -228,12 +228,25 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   } // IS_MODE_RTOS()
-  while (1)
+  else if (IS_MODE_NON_RTOS())
   {
+    _uartReady = true;
+    while (1)
+    {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+      // determine if button pressed
+      float pEulerData[3];
+      fusion_get_euler(pEulerData, 0);
+      updateGame(_gameObjectsSV, _buttonWentDown, pEulerData[1]);
+      _buttonWentDown = false;
+
+      // update and transmit buffer
+      updateBuffer(_gameObjectsSV);
+      transmitBufferNonDMA();
+    }
+  } // IS_MODE_NON_RTOS
   /* USER CODE END 3 */
 }
 
