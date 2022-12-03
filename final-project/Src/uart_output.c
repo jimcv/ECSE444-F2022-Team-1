@@ -148,6 +148,14 @@ void transmitBuffer()
 }
 
 /**
+ * Send the output buffer over UART without using DMA.
+ */
+void transmitBufferNonDMA()
+{
+  hal_exec(HAL_UART_Transmit(_huart, _buf, 2 * _n, OS_TIMEOUT));
+}
+
+/**
  * Helper function to write a number in a string without sprintf.
  *
  * @param str the string to write in.
