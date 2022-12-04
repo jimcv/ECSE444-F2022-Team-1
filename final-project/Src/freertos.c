@@ -46,7 +46,7 @@
 /* USER CODE BEGIN Variables */
 bool semaphoresEnabled = false;
 uint32_t activeSemaphores = 0;
-shared_variable semaphores[NUM_SEMAPHORES] = {{{0, NULL}, NULL, NULL}};
+shared_variable semaphores[NUM_SEMAPHORES] = {{NULL, NULL, NULL}};
 /* USER CODE END Variables */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -94,7 +94,7 @@ void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, Stack
  * @param var the pointer to the variable to share.
  * @returns the ID of the created variable, -1 if not created.
  */
-uint32_t createSharedVariable(int32_t count, void *var)
+uint32_t createSharedVariable(int32_t count, void *var, const osSemaphoreDef_t *semaphoreDef)
 {
   if (activeSemaphores >= NUM_SEMAPHORES)
   {
@@ -102,7 +102,12 @@ uint32_t createSharedVariable(int32_t count, void *var)
   }
 
   shared_variable *sv = semaphores + activeSemaphores;
-  sv->semaphoreHandle = osSemaphoreCreate(&sv->semaphoreDef, count);
+  if (semaphoreDef)
+  {
+    sv->semaphoreDef = semaphoreDef;
+    sv->semaphoreHandle = osSemaphoreCreate(semaphoreDef, count);
+  }
+
   sv->var = var;
 
   return activeSemaphores++;
