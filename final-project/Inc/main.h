@@ -47,7 +47,6 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 typedef char bool;
-typedef int MODE;
 
 typedef void (*locked_func)(void*);
 
@@ -96,7 +95,7 @@ typedef struct __game_objects
 // Model to interface with a shared variable.
 typedef struct __sharedvariable
 {
-  osSemaphoreDef_t semaphoreDef;
+  const osSemaphoreDef_t *semaphoreDef;
   osSemaphoreId semaphoreHandle;
   void *var;
 } shared_variable;
@@ -104,7 +103,6 @@ typedef struct __sharedvariable
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-extern const MODE mode;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -113,10 +111,11 @@ extern const MODE mode;
 #define MIN(a, b) a < b ? a : b
 #define MAX(a, b) a > b ? a : b
 
-#define IS_MODE_RTOS()    mode & MODE_RTOS
-#define IS_MODE_INPUT()   mode & MODE_TEST_INPUT
-#define IS_MODE_ENGINE()  mode & MODE_TEST_ENGINE
-#define IS_MODE_OUTPUT()  mode & MODE_TEST_OUTPUT
+#define IS_MODE_RTOS()      MODE_CUR & MODE_RTOS
+#define IS_MODE_SERIAL()    MODE_CUR & MODE_SERIAL
+#define IS_MODE_INPUT()     MODE_CUR & MODE_TEST_INPUT
+#define IS_MODE_ENGINE()    MODE_CUR & MODE_TEST_ENGINE
+#define IS_MODE_OUTPUT()    MODE_CUR & MODE_TEST_OUTPUT
 
 // Debugging port
 #define ITM_Port32(n) (*((volatile unsigned long *) (0xE0000000+4*n)))
@@ -126,7 +125,7 @@ extern const MODE mode;
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-uint32_t createSharedVariable(int32_t count, void *var);
+uint32_t createSharedVariable(int32_t count, void *var, const osSemaphoreDef_t *semaphoreDef);
 uint32_t getSharedVariable(void *var);
 
 void enableSharedVariables();
@@ -162,10 +161,18 @@ void led_red_off();
 // ================
 // MODE VARIABLES
 // ================
-#define MODE_RTOS         0b0001 // Release mode
-#define MODE_TEST_INPUT   0b0010 // Mode testing input sensors
-#define MODE_TEST_ENGINE  0b0100 // Mode testing engine
-#define MODE_TEST_OUTPUT  0b1000 // Mode testing output generation
+#define MODE_RTOS         0b00001 // Release mode
+#define MODE_TEST_INPUT   0b00010 // Mode testing input sensors
+#define MODE_TEST_ENGINE  0b00100 // Mode testing engine
+#define MODE_TEST_OUTPUT  0b01000 // Mode testing output generation
+#define MODE_SERIAL       0b10000 // Mode testing the integrated system without RTOS
+#define MODE_CUR          MODE_RTOS // Current running mode.
+
+// ================
+// ITM_SIGNALS
+// ================
+#define ITM_UART_DONE 1
+#define ITM_GAME_UPDATE 2
 
 // ================
 // RTOS DEFINES

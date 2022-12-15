@@ -56,12 +56,9 @@ DMA_HandleTypeDef hdma_usart1_tx;
 osThreadId engineTaskHandle;
 osThreadId outputTaskHandle;
 /* USER CODE BEGIN PV */
-// running mode
-const MODE mode = MODE_RTOS;
-
 // button flags
 uint32_t _buttonWentDownSV;
-bool _buttonWentDown = false;
+volatile bool _buttonWentDown = false;
 
 // game objects
 uint32_t _gameObjectsSV;
@@ -69,7 +66,9 @@ game_objects _gameObjects;
 
 // UART flags
 uint32_t _uartReadySV;
-bool _uartReady = true;
+volatile bool _uartReady = true;
+
+int _num_transmissions = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -117,9 +116,22 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
   disableSharedVariables();
-  _buttonWentDownSV = createSharedVariable(1, &_buttonWentDown);
-  _gameObjectsSV = createSharedVariable(1, &_gameObjects);
-  _uartReadySV = createSharedVariable(1, &_uartReady);
+#if (IS_MODE_RTOS())
+  {
+    osSemaphoreDef(buttonWentDown);
+    _buttonWentDownSV = createSharedVariable(1, &_buttonWentDown, osSemaphore(buttonWentDown));
+    osSemaphoreDef(gameObjects);
+    _gameObjectsSV = createSharedVariable(1, &_gameObjects, osSemaphore(gameObjects));
+    osSemaphoreDef(uartReady);
+    _uartReadySV = createSharedVariable(1, &_uartReady, osSemaphore(uartReady));
+  }
+#else
+  {
+    _buttonWentDownSV = createSharedVariable(1, &_buttonWentDown, NULL);
+    _gameObjectsSV = createSharedVariable(1, &_gameObjects, NULL);
+    _uartReadySV = createSharedVariable(1, &_uartReady, NULL);
+  }
+#endif
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -137,24 +149,25 @@ int main(void)
   bool reconfigurationRequested = !isConfigurationValid() || is_user_btn_down();
 
   // initialization
-  if (IS_MODE_ENGINE())
+#if (IS_MODE_ENGINE())
   {
     initEngine(reconfigurationRequested, &_gameObjects);
   }
-  else if (IS_MODE_INPUT())
+#elif (IS_MODE_INPUT())
   {
     initInput(reconfigurationRequested);
   }
-  else if (IS_MODE_OUTPUT())
+#elif (IS_MODE_OUTPUT())
   {
     initOutput(reconfigurationRequested, &huart1, &_gameObjects);
   }
-  else if (IS_MODE_RTOS())
+#elif (IS_MODE_RTOS() || IS_MODE_SERIAL())
   {
     initEngine(reconfigurationRequested, &_gameObjects);
     initInput(reconfigurationRequested);
     initOutput(reconfigurationRequested, &huart1, &_gameObjects);
   }
+#endif
 
   if (reconfigurationRequested)
   {
@@ -169,11 +182,11 @@ int main(void)
   led_red_off();
 
   // start testing mode
-  if (IS_MODE_ENGINE())
+#if (IS_MODE_ENGINE())
   {
     StartEngineTask(NULL);
   }
-  else if (IS_MODE_INPUT())
+#elif (IS_MODE_INPUT())
   {
     for (;;)
     {
@@ -181,13 +194,13 @@ int main(void)
       fusion_get_euler(vals, 0);
     }
   }
-  else if (IS_MODE_OUTPUT())
+#elif (IS_MODE_OUTPUT())
   {
     StartOutputTask(NULL);
   }
 
   // start RTOS
-  if (IS_MODE_RTOS())
+#elif (IS_MODE_RTOS())
   {
   /* USER CODE END 2 */
 
@@ -228,12 +241,30 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   } // IS_MODE_RTOS()
-  while (1)
+#elif (IS_MODE_SERIAL())
   {
+    while (1)
+    {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+      // delay
+      delay(1000 / REFRESH_RATE);
+
+      // determine if button pressed
+      float pEulerData[3];
+      fusion_get_euler(pEulerData, 0);
+      updateGame(_gameObjectsSV, _buttonWentDown, pEulerData[1]);
+      _buttonWentDown = false;
+      ITM_Port32(31) = ITM_GAME_UPDATE;
+
+      // update and transmit buffer
+      updateBuffer(_gameObjectsSV);
+      transmitBufferNonDMA();
+      HAL_UART_TxCpltCallback(&huart1);
+    }
+  } // IS_MODE_SERIAL
+#endif
   /* USER CODE END 3 */
 }
 
@@ -590,14 +621,11 @@ static void MX_GPIO_Init(void)
 // delay
 void delay(uint32_t delay)
 {
-  if (IS_MODE_RTOS())
-  {
-    osDelay(delay);
-  }
-  else
-  {
-    HAL_Delay(delay);
-  }
+#if (IS_MODE_RTOS())
+  osDelay(delay);
+#else
+  HAL_Delay(delay);
+#endif
 }
 
 // wrapper function to handle HAL errors
@@ -664,6 +692,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
   if (huart->Instance == USART1) {
+    ITM_Port32(31) = ITM_UART_DONE;
+    ++_num_transmissions;
     // indicate that DMA transmission has completed
     lockSharedVariable(_uartReadySV, IRQ_TIMEOUT);
     _uartReady = true;
@@ -697,6 +727,7 @@ void StartEngineTask(void const * argument)
     float pEulerData[3];
     fusion_get_euler(pEulerData, 0);
     updateGame(_gameObjectsSV, buttonWentDown, pEulerData[1]);
+    ITM_Port32(31) = ITM_GAME_UPDATE;
   }
   /* USER CODE END 5 */
 }

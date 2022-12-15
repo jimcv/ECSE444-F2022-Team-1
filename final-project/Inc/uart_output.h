@@ -22,6 +22,11 @@ void updateBuffer(uint32_t gameObjectsSV);
 void transmitBuffer();
 
 /**
+ * Send the output buffer over UART without using DMA.
+ */
+void transmitBufferNonDMA();
+
+/**
  * Helper function to write a number in a string without sprintf.
  *
  * @param str the string to write in.
